@@ -2,7 +2,7 @@
 FROM node:18-alpine
 
 # コンテナ内の作業ディレクトリを指定
-WORKDIR /app
+WORKDIR /flower-app/src/app
 
 # package.json と package-lock.json を先にコピーして依存関係をインストール
 COPY package*.json ./
