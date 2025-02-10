@@ -1,25 +1,24 @@
-# ベースイメージ
+# Dockerのベースイメージ
 FROM node:18-alpine
 
-# コンテナ内の作業ディレクトリを指定
-WORKDIR /flower-app/src/app
+# コンテナ内の作業ディレクトリを /app に設定
+WORKDIR /app
 
-# package.json と package-lock.json を先にコピーして依存関係をインストール
-COPY package*.json ./
+# 1) flower-app フォルダ内の package.json & package-lock.json をコピー
+COPY flower-app/package*.json ./
+
+# 2) 依存関係をインストール
 RUN npm install
 
-# アプリのソースコードをコピー
-COPY . .
+# 3) flower-app フォルダの全ファイルをコピー (ソースコードやその他ファイル)
+COPY flower-app ./
 
-# Next.js をビルド (SSR 用の .next フォルダができる)
+# 4) Next.js をビルド (SSR用の .next が生成される)
 RUN npm run build
 
-# Cloud Run はデフォルトでポート8080を期待しているので
-# package.json の "start" スクリプトで 8080 ポートを使うようにします
-# 例: "start": "next start -p 8080"
-
-# 実際にコンテナ内で公開するポート (ドキュメント用)
+# 5) Cloud Run 等でポート8080を使う
 EXPOSE 8080
 
-# コンテナ起動時に「npm run start」を実行
+# 6) コンテナ起動時に Next.js を起動
+#    ※ package.json の "start" スクリプトで "next start -p 8080" を指定しておく
 CMD ["npm", "run", "start"]
