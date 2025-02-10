@@ -1,5 +1,8 @@
 "use client"
 
+// ★ 追加: 動的レンダリングを強制
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
@@ -10,10 +13,7 @@ import { FloatingActionButton } from "@/components/floating-action-button"
 
 // 仮のデータ取得関数
 const fetchSearchResults = async (query: string, filters: Record<string, string[]>) => {
-  // 実際のAPIコールをここに実装します
   console.log("Fetching results for:", query, "with filters:", filters)
-
-  // 仮のデータを返します
   return {
     posts: Array.from({ length: 6 }, (_, i) => ({
       id: `post-${i}`,
@@ -24,7 +24,7 @@ const fetchSearchResults = async (query: string, filters: Record<string, string[
       id: `user-${i}`,
       name: `${query}好きなユーザー${i + 1}`,
       avatar: `/placeholder.svg?text=User${i + 1}`,
-      bio: `${query}が大好きです。特に${filters.flowerTypes[0] || "花"}が好きです。`,
+      bio: `${query}が大好きです。特に${filters.flowerTypes?.[0] || "花"}が好きです。`,
     })),
     communities: Array.from({ length: 6 }, (_, i) => ({
       id: `community-${i}`,
@@ -84,4 +84,3 @@ export default function SearchPage() {
     </div>
   )
 }
-
