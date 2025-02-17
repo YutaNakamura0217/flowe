@@ -1,24 +1,46 @@
-"use client"
+// components/comment-form.tsx
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 interface CommentFormProps {
-  postId: string
-  onSubmit: (comment: string) => void
+  postId: string;
+  onCommentPosted: (newComment: string) => void;
 }
 
-export function CommentForm({ postId, onSubmit }: CommentFormProps) {
-  const [comment, setComment] = useState("")
+export function CommentForm({ postId, onCommentPosted }: CommentFormProps) {
+  const [comment, setComment] = useState("");
+  const csrfToken = useCsrfToken();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (comment.trim()) {
-      onSubmit(comment)
-      setComment("")
+      try {
+        const res = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          // キーを"text"に変更（モデルのフィールド名に合わせる）
+          body: JSON.stringify({ text: comment }),
+        });
+        if (!res.ok) {
+          throw new Error("Failed to post comment");
+        }
+        console.log("Comment posted successfully");
+        // 投稿成功後、コールバックを呼ぶ
+        onCommentPosted(comment);
+      } catch (error) {
+        console.error(error);
+      }
+      setComment("");
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -32,6 +54,5 @@ export function CommentForm({ postId, onSubmit }: CommentFormProps) {
         コメントを投稿
       </Button>
     </form>
-  )
+  );
 }
-

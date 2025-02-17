@@ -1,61 +1,107 @@
-import { Header } from "@/components/header"
-import { PostDetail } from "@/components/post-detail"
-import { CommentList } from "@/components/comment-list"
-import { CommentForm } from "@/components/comment-form"
+// app/posts/[id]/page.tsx
+import { PostDetail } from "@/components/post-detail";
+import { CommentSection } from "@/components/comment-section";
 
-// 仮のデータ
-const post = {
-  id: "1",
-  imageUrl: "/placeholder.svg",
-  caption: "美しいバラが咲きました！",
-  likes: 100,
-  comments: 10,
-  flowerType: "バラ",
-  location: "東京都新宿区",
+interface PostAPIResponse {
+  id: number;
   user: {
-    name: "花子",
-    avatar: "/placeholder.svg?user",
-  },
+    id: number;
+    username: string;
+    display_name: string | null;
+    profile_image: string | null;
+  };
+  image_url: string | null;
+  caption: string;
+  likes: number;
+  comments: number;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+  variety_name: string;
+  location: string;
+  public_status: string;
 }
 
-const comments = [
-  {
-    id: "1",
-    user: {
-      name: "太郎",
-      avatar: "/placeholder.svg?user1",
-    },
-    content: "素晴らしい写真ですね！",
-    createdAt: "2時間前",
-    likes: 5,
-  },
-  {
-    id: "2",
-    user: {
-      name: "次郎",
-      avatar: "/placeholder.svg?user2",
-    },
-    content: "この品種は何ですか？",
-    createdAt: "1時間前",
-    likes: 2,
-  },
-]
+interface CommentAPIResponse {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+    display_name: string | null;
+    profile_image: string | null;
+  };
+  text: string;
+  created_at: string;
+  likes: number;
+}
 
-export default function PostPage({ params }: { params: { id: string } }) {
+interface Comment {
+  id: string;
+  user: {
+    name: string;
+    profile_image: string;
+  };
+  text: string;
+  createdAt: string;
+  likes: number;
+}
+
+export default async function PostPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const postId = params.id;
+
+  // 投稿データの取得
+  const postRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/`, { cache: "no-cache" });
+  if (!postRes.ok) {
+    throw new Error("Failed to fetch post data");
+  }
+  const postData: PostAPIResponse = await postRes.json();
+
+  const post = {
+    id: postData.id.toString(),
+    imageUrl: postData.image_url || "/placeholder.svg",
+    caption: postData.caption,
+    likes: postData.likes,
+    comments: postData.comments,
+    flowerType: postData.variety_name,
+    location: postData.location,
+    user: {
+      name: postData.user.display_name || postData.user.username,
+      profile_image: postData.user.profile_image || "/placeholder.svg?user",
+    },
+    createdAt: postData.created_at,
+    tags: postData.tags,
+  };
+  
+
+  // 初期コメントデータの取得
+  const commentsRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
+  let initialComments: Comment[] = [];
+  if (commentsRes.ok) {
+    const commentsData: CommentAPIResponse[] = await commentsRes.json();
+    initialComments = commentsData.map((c) => ({
+      id: c.id.toString(),
+      user: {
+        name: c.user.display_name || c.user.username,
+        profile_image: c.user.profile_image || "/placeholder.svg?user",
+      },
+      text: c.text,
+      createdAt: c.created_at,
+      likes: c.likes,
+    }));
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto space-y-8">
           <PostDetail post={post} />
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">コメント</h2>
-            <CommentList comments={comments} />
-            <CommentForm postId={params.id} onSubmit={(comment) => console.log("New comment:", comment)} />
-          </div>
+          <CommentSection postId={postId} initialComments={initialComments} />
         </div>
       </main>
     </div>
-  )
+  );
 }
-

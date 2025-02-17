@@ -1,19 +1,20 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import type React from "react" // Import React
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import type React from "react";
+import { Header } from "@/components/header"; // Header をインポート
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Flower Friends",
   description: "お花好きのための特化型SNS",
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="ja" suppressHydrationWarning>
@@ -27,8 +28,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${inter.className} font-body min-h-screen bg-background`}>{children}</body>
+      <body className={`${inter.className} font-body min-h-screen bg-background`}>
+        <Header />
+        {children}
+      </body>
     </html>
-  )
+  );
 }
-

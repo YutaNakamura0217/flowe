@@ -1,70 +1,73 @@
-"use client"
+// components/comment-section.tsx
+"use client";
 
-import { useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from "react";
+import { CommentList } from "./comment-list";
+import { CommentForm } from "./comment-form";
 
 interface Comment {
-  id: string
+  id: string;
   user: {
-    name: string
-    avatar: string
-  }
-  content: string
-  createdAt: string
+    name: string;
+    profile_image: string;
+  };
+  text: string;
+  createdAt: string;
+  likes: number;
+}
+
+interface CommentAPIResponse {
+  id: number;
+  user: {
+    id: number;
+    username: string;
+    display_name: string | null;
+    profile_image: string | null;
+  };
+  text: string;
+  created_at: string;
+  likes: number;
 }
 
 interface CommentSectionProps {
-  initialComments: Comment[]
+  postId: string;
+  initialComments: Comment[];
 }
 
-export function CommentSection({ initialComments }: CommentSectionProps) {
-  const [comments, setComments] = useState(initialComments)
-  const [newComment, setNewComment] = useState("")
+export function CommentSection({ postId, initialComments }: CommentSectionProps) {
+  const [comments, setComments] = useState<Comment[]>(initialComments);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newComment.trim()) {
-      const comment: Comment = {
-        id: Date.now().toString(),
+  // コメント一覧を再フェッチする関数（更新用）
+  const fetchComments = async () => {
+    const res = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
+    if (res.ok) {
+      const commentsData: CommentAPIResponse[] = await res.json();
+      const newComments = commentsData.map((c) => ({
+        id: c.id.toString(),
         user: {
-          name: "Current User",
-          avatar: "/placeholder.svg?user",
+          name: c.user.display_name || c.user.username,
+          profile_image: c.user.profile_image || "/placeholder.svg?user",
         },
-        content: newComment,
-        createdAt: new Date().toLocaleString(),
-      }
-      setComments([comment, ...comments])
-      setNewComment("")
+        text: c.text,
+        createdAt: c.created_at,
+        likes: c.likes,
+      }));
+      setComments(newComments);
     }
-  }
+  };
+
+  // CommentFormから呼ばれるハンドラ
+  const handleCommentPosted = async (newCommentText: string) => {
+    // 新規コメントを投稿した後、最新のコメント一覧を取得
+    await fetchComments();
+  };
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">コメント ({comments.length})</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Textarea placeholder="コメントを入力..." value={newComment} onChange={(e) => setNewComment(e.target.value)} />
-        <Button type="submit">コメントを投稿</Button>
-      </form>
-      <div className="space-y-4">
-        {comments.map((comment) => (
-          <div key={comment.id} className="flex space-x-4">
-            <Avatar>
-              <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-              <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium">{comment.user.name}</span>
-                <span className="text-xs text-muted-foreground">{comment.createdAt}</span>
-              </div>
-              <p className="text-sm">{comment.content}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <h2 className="text-2xl font-bold">コメント</h2>
+      <CommentList comments={comments} />
+      <CommentForm postId={postId} onCommentPosted={handleCommentPosted} />
     </div>
-  )
+  );
 }
 

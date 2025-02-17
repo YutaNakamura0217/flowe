@@ -1,18 +1,32 @@
-"use client"
+"use client";
 
-import { Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { NewPostModal } from "@/components/new-post-modal";
 
-export function FloatingActionButton() {
-  return (
-    <Button
-      className="fixed bottom-4 right-4 h-14 w-14 rounded-full bg-accent-pink shadow-lg"
-      size="icon"
-      aria-label="新規投稿"
-      onClick={() => (window.location.href = "/posts/new")}
-    >
-      <Plus className="h-6 w-6" />
-    </Button>
-  )
+interface FloatingActionButtonProps {
+  onPostCreated?: () => void;
 }
 
+export function FloatingActionButton({ onPostCreated }: FloatingActionButtonProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        variant="default"
+        size="icon"
+        className="fixed bottom-10 right-10 rounded-full h-14 w-14"
+        onClick={() => setModalOpen(true)}
+      >
+        <Plus className="h-6 w-6" />
+      </Button>
+      <NewPostModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onPostCreated={onPostCreated} 
+      />
+    </>
+  );
+}

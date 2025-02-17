@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Bell, User, Flower, Menu } from "lucide-react";
+import { Search, Bell, Flower, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserDropdown } from "@/components/user-dropdown";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
+  const { isAuthenticated, user, loading } = useAuth();
+
   return (
     <header className="relative sticky top-0 z-50 w-full bg-white border-b border-[#F0E68C]">
       {/* 背景に薄い花のシルエットを配置 */}
@@ -69,21 +72,28 @@ export function Header() {
             </Button>
           </div>
         </div>
-        {/* 右側：通知とユーザーアバター */}
+        {/* 右側：通知とユーザー関連 */}
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon" className="text-[#F0E68C]">
             <Bell className="h-6 w-6" />
             <span className="sr-only">通知</span>
           </Button>
-          <Avatar>
-            <AvatarImage src="/placeholder.svg" alt="ユーザーアイコン" />
-            <AvatarFallback className="bg-gray-200 text-[#F0E68C]">
-              <User className="h-6 w-6" />
-            </AvatarFallback>
-          </Avatar>
+          {loading ? (
+            // 認証状態を取得中はローディング表示
+            <span>Loading...</span>
+          ) : isAuthenticated ? (
+            // ログイン済みならユーザードロップダウンを表示
+            <UserDropdown />
+          ) : (
+            // 未ログインならログインページへのリンクを表示
+            <Link href="/login">
+              <Button className="bg-[#F08080] hover:bg-[#e96262] text-white">
+                ログイン
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
   );
 }
-

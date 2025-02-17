@@ -1,22 +1,27 @@
-import Image from "next/image"
-import Link from "next/link"
+// components/post-grid.tsx
+import Image from "next/image";
+import Link from "next/link";
 
 interface PostGridProps {
   posts: {
-    id: string
-    imageUrl: string
-    likes: number
-    comments: number
-  }[]
+    id: number;
+    image_url: string;
+    likes: number;
+    comments: number;
+  }[];
 }
 
 export function PostGrid({ posts }: PostGridProps) {
   return (
     <div className="grid grid-cols-3 gap-1 sm:gap-2">
       {posts.map((post) => (
-        <Link key={post.id} href={`/posts/${post.id}`} className="relative aspect-square">
+        <Link
+          key={post.id}
+          href={`/posts/${post.id}`}
+          className="relative aspect-square"
+        >
           <Image
-            src={post.imageUrl || "/placeholder.svg"}
+            src={post.image_url || "/placeholder.svg"}
             alt=""
             fill
             className="object-cover"
@@ -31,6 +36,5 @@ export function PostGrid({ posts }: PostGridProps) {
         </Link>
       ))}
     </div>
-  )
+  );
 }
-

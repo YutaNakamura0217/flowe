@@ -4,9 +4,9 @@ interface Comment {
   id: string
   user: {
     name: string
-    avatar: string
+    profile_image: string
   }
-  content: string
+  text: string
   createdAt: string
   likes: number
 }
@@ -21,7 +21,7 @@ export function CommentList({ comments }: CommentListProps) {
       {comments.map((comment) => (
         <div key={comment.id} className="flex space-x-4">
           <Avatar>
-            <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
+            <AvatarImage src={comment.user.profile_image} alt={comment.user.name} />
             <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-1">
@@ -29,7 +29,7 @@ export function CommentList({ comments }: CommentListProps) {
               <span className="font-medium">{comment.user.name}</span>
               <span className="text-xs text-muted-foreground">{comment.createdAt}</span>
             </div>
-            <p className="text-sm">{comment.content}</p>
+            <p className="text-sm">{comment.text}</p>
             <div className="flex items-center space-x-2 text-xs text-muted-foreground">
               <button className="hover:underline">返信</button>
               <button className="hover:underline">いいね！ {comment.likes}</button>

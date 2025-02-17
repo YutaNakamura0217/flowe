@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button"
 
 interface EventListProps {
   events: {
-    id: string
+    id: number
     title: string
     date: string
     location: string
-    attendees: number
+    attendees_count: number 
   }[]
 }
 
@@ -17,7 +17,10 @@ export function EventList({ events }: EventListProps) {
   return (
     <div className="space-y-4">
       {events.map((event) => (
-        <Card key={event.id} className="overflow-hidden bg-[#FFF0F5] hover:shadow-lg transition-shadow">
+        <Card
+          key={event.id}
+          className="overflow-hidden bg-[#FFF0F5] hover:shadow-lg transition-shadow"
+        >
           <CardHeader>
             <h3 className="text-lg font-bold">{event.title}</h3>
           </CardHeader>
@@ -32,7 +35,7 @@ export function EventList({ events }: EventListProps) {
             </div>
             <div className="flex items-center text-sm text-muted-foreground">
               <Users className="h-4 w-4 mr-2" />
-              <span>参加予定: {event.attendees}人</span>
+              <span>参加予定: {event.attendees_count}人</span>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between items-center">
@@ -52,4 +55,3 @@ export function EventList({ events }: EventListProps) {
     </div>
   )
 }
-
