@@ -60,6 +60,22 @@ export default async function PostPage({
   }
   const postData: PostAPIResponse = await postRes.json();
 
+  // Fetch the current user's data.  This assumes there's an API endpoint
+  // at /api/accounts/mypage/ that returns the logged-in user's information.
+  // The credentials: "include" option is necessary to send cookies with the
+  // request, which is essential for authentication.
+    const userRes = await fetch(`https://127.0.0.1:8000/api/accounts/mypage/`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-cache"
+    });
+
+    let currentUserData = null;
+    if (userRes.ok) {
+        currentUserData = await userRes.json();
+    }
+
+
   const post = {
     id: postData.id.toString(),
     imageUrl: postData.image_url || "/placeholder.svg",
@@ -69,16 +85,16 @@ export default async function PostPage({
     flowerType: postData.variety_name,
     location: postData.location,
     user: {
+      id: postData.user.id.toString(),
       name: postData.user.display_name || postData.user.username,
       profile_image: postData.user.profile_image || "/placeholder.svg?user",
     },
     createdAt: postData.created_at,
     tags: postData.tags,
   };
-  
 
   // 初期コメントデータの取得
-  const commentsRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
+    const commentsRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
   let initialComments: Comment[] = [];
   if (commentsRes.ok) {
     const commentsData: CommentAPIResponse[] = await commentsRes.json();
@@ -98,7 +114,7 @@ export default async function PostPage({
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          <PostDetail post={post} />
+          <PostDetail post={post} currentUserId={currentUserData?.id} />
           <CommentSection postId={postId} initialComments={initialComments} />
         </div>
       </main>

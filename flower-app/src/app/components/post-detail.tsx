@@ -22,14 +22,16 @@ interface PostDetailProps {
     flowerType: string
     location: string
     user: {
-      name: string
-      profile_image: string
-    }
+      id: string;
+      name: string;
+      profile_image: string;
+    };
     tags?: string[]
-  }
+  };
+  currentUserId?: number;
 }
 
-export function PostDetail({ post }: PostDetailProps) {
+export function PostDetail({ post, currentUserId }: PostDetailProps) {
   const [likesCount, setLikesCount] = useState<number>(post.likes)
   const { toggleLike, isLoading, error } = useToggleLike()
   const handleLikeClick = async () => {
@@ -67,7 +69,9 @@ export function PostDetail({ post }: PostDetailProps) {
             <p className="text-sm text-muted-foreground">投稿者</p>
           </div>
         </div>
-        <Button variant="outline">フォロー</Button>
+        {currentUserId !== undefined && post.user.id !== undefined && currentUserId !== Number(post.user.id) && (
+          <Button variant="outline">フォロー</Button>
+        )}
       </div>
       
       {/* 投稿内容 & タグ */}
