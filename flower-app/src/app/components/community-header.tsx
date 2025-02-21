@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -12,10 +13,13 @@ interface CommunityHeaderProps {
     members_count: number;
     is_member: boolean;
   };
+  onJoinLeave: () => void; // Add callback prop
 }
 
-export function CommunityHeader({ community }: CommunityHeaderProps) {
+export function CommunityHeader({ community, onJoinLeave }: CommunityHeaderProps) {
   const [isJoining, setIsJoining] = useState(false);
+  const [isMember, setIsMember] = useState(community.is_member); // Local state for isMember
+  const [membersCount, setMembersCount] = useState(community.members_count);
   const csrfToken = useCsrfToken();
 
   const handleJoinLeave = async () => {
@@ -24,7 +28,7 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
       const response = await fetch(
         `https://127.0.0.1:8000/api/communities/${community.id}/join/`,
         {
-          method: community.is_member ? "DELETE" : "POST",
+          method: isMember ? "DELETE" : "POST",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
@@ -37,14 +41,12 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
+      // Update local state
+      setIsMember(!isMember);
+      setMembersCount(prevCount => isMember ? prevCount - 1 : prevCount + 1);
 
-      community.is_member = !community.is_member;
-
-      community.members_count += community.is_member ? 1 : -1;
-
+      // Call the callback function
+      onJoinLeave();
     } catch (error) {
       console.error("Error joining/leaving community:", error);
     } finally {
@@ -70,7 +72,8 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
             <h1 className="text-2xl font-bold">{community.name}</h1>
             <p className="text-muted-foreground">{community.description}</p>
             <p className="text-sm text-muted-foreground">
-              {community.members_count} メンバー
+              {/* Use local state for membersCount */}
+              {membersCount} メンバー
             </p>
           </div>
           <Button
@@ -80,9 +83,9 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
             disabled={isJoining}
           >
             {isJoining ? (
-              <>{community.is_member ? "退会処理中..." : "参加処理中..."}</>
+              <>{isMember ? "退会処理中..." : "参加処理中..."}</>
             ) : (
-              <>{community.is_member ? "退会する" : "参加する"}</>
+              <>{isMember ? "退会する" : "参加する"}</>
             )}
           </Button>
         </div>

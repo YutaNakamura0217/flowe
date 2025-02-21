@@ -1,38 +1,59 @@
-from rest_framework import generics, permissions,views  # permissions を追加
+from rest_framework import generics, permissions, views  # permissions を追加
 from .models import Post, Comment, Like
-from .serializers import PostSerializer,DetailedPostSerializer
+from .serializers import PostSerializer, DetailedPostSerializer
 from django.contrib.auth import get_user_model
 from serializers.nested import NestedUserSerializer as UserSerializer
 from .serializers import CommentSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from communities.models import CommunityMembership
+
 User = get_user_model()
 
 
 class PostList(generics.ListCreateAPIView):
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # 認証済みユーザーのみ作成可能、読み取りは誰でもOK
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly
+    ]  # 認証済みユーザーのみ作成可能、読み取りは誰でもOK
 
     def get_queryset(self):
-        """
-        Optionally restricts the returned purchases to a given user,
-        by filtering against a `user` query parameter in the URL.
-        """
         queryset = Post.objects.all()
         user_id = self.request.query_params.get('user')
-        if user_id is not None:
+        community_id = self.request.query_params.get(
+            'community'
+        )  # Add community filtering
+
+        if user_id:
             queryset = queryset.filter(user=user_id)
+
+        # If a community is specified, filter by membership
+        if community_id:
+            # Check if the user is a member of the community
+            if self.request.user.is_authenticated:
+                membership = CommunityMembership.objects.filter(
+                    user=self.request.user, community_id=community_id
+                ).exists()
+                if not membership:
+                    raise PermissionDenied('You are not a member of this community.')
+                queryset = queryset.filter(community=community_id)
+            else:
+                raise PermissionDenied("You must be logged in to view this community's posts.")
+
         return queryset
 
     def perform_create(self, serializer):
-        print(self.request.data)  # リクエストデータを出力 (デバッグ用)
-        try:
-            serializer.save(user=self.request.user)
-        except ValidationError as e:
-            print(e.detail)  # バリデーションエラーの詳細を出力
-            raise  # 例外を再送出してクライアントにエラーを返す
+        # Check community membership before creating a post
+        community_id = self.request.data.get('community')
+        if community_id:
+            membership = CommunityMembership.objects.filter(
+                user=self.request.user, community_id=community_id
+            ).exists()
+            if not membership:
+                raise PermissionDenied('You are not a member of this community.')
+        serializer.save(user=self.request.user)
 
 
 class UserDetail(generics.RetrieveAPIView):

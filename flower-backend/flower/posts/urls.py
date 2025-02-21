@@ -1,8 +1,10 @@
 # flower/posts/urls.py
+# flower/posts/urls.py
 from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('community/<int:community>/', views.PostList.as_view(), name='community-post-list'), # Add community filtering
     path('', views.PostList.as_view(), name='post-list'),
     path('users/<int:pk>/', views.UserDetail.as_view(), name='user-detail'),
     path('<int:pk>/', views.PostDetail.as_view(), name='posts-detail'),
