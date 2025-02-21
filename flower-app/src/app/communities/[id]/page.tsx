@@ -27,7 +27,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
    setLoading(true); // ローディング開始
    setError(null); // エラーをリセット
    try {
-    const response = await fetch(`http://127.0.0.1:8000/api/communities/${communityId}/`); // APIエンドポイントを指定 (バックエンドのURLに合わせる)
+    const response = await fetch(`https://127.0.0.1:8000/api/communities/${communityId}/`); // APIエンドポイントを指定 (バックエンドのURLに合わせる)
     if (!response.ok) {
      throw new Error(`APIリクエストエラー: ${response.status}`); // エラーレスポンスの場合、エラーを投げる
     }
