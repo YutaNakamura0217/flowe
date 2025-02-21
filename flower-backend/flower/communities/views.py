@@ -14,6 +14,12 @@ class CommunityList(generics.ListCreateAPIView):
     def perform_create(self, serializer):  # 新規作成時に実行
         serializer.save()
 
+    def get_serializer_context(self):
+        """serializer context に request を追加 (is_member 判定で使用)"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class CommunityDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Community.objects.prefetch_related('posts')

@@ -2,6 +2,7 @@
 import { Breadcrumb } from "@/components/breadcrumb";
 import { CommunitySearchBar } from "@/components/community-search-bar";
 import { CommunityCard } from "@/components/community-card";
+import { cookies } from 'next/headers';
 import {
   Pagination,
   PaginationContent,
@@ -14,8 +15,18 @@ import {
 import { Community } from "@/components/types";
 
 async function getCommunities() {
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('sessionid')?.value; // Djangoのsessionid
+
+  const headers = new Headers();
+  if (sessionCookie) {
+    headers.append('Cookie', `sessionid=${sessionCookie}`);
+  }
+
   const res = await fetch("https://127.0.0.1:8000/api/communities/", {
     cache: "no-store",
+    headers: headers,
+    // credentials: "include",  // Remove credentials: "include"
   });
   if (!res.ok) {
     throw new Error(`Failed to fetch communities: ${res.status}`);

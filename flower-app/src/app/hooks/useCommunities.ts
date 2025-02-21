@@ -6,6 +6,7 @@ export interface Community {
   description: string
   cover_image: string
   members_count: number
+  is_member: boolean;
 }
 
 export function useCommunities() {
@@ -13,9 +14,11 @@ export function useCommunities() {
 
   const fetchCommunities = useCallback(async () => {
     try {
-      const response = await fetch("https://127.0.0.1:8000/api/communities/")
+      const response = await fetch("https://127.0.0.1:8000/api/communities/", {
+        credentials: "include",
+      });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json()
       setCommunities(data)
