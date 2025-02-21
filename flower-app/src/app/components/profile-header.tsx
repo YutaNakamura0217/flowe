@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useFollowStatus } from "@/hooks/useFollowStatus"; // useFollowStatus フックをインポート
+import { useMyPage } from "@/hooks/useMyPage";
 
 interface ProfileHeaderProps {
     user: {
@@ -21,7 +22,9 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
     const { isFollowing, toggleFollow } = useFollowStatus({ userId: user.id }); // フックを使用
+    const { data: myPageData } = useMyPage();
 
+    const isMyPage = myPageData?.id === user.id;
 
     return (
         <div className="space-y-4">
@@ -51,9 +54,11 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
                         <p className="text-muted-foreground">{user.profile.bio}</p>
                     </div>
                     {/* ボタンの表示をフックから取得した isFollowing ステートによって切り替え */}
-                    <Button className="mt-4 sm:mt-0" onClick={toggleFollow}>
-                        {isFollowing ? 'フォロー解除' : 'フォロー'}
-                    </Button>
+                    {!isMyPage && (
+                        <Button className="mt-4 sm:mt-0" onClick={toggleFollow}>
+                            {isFollowing ? 'フォロー解除' : 'フォロー'}
+                        </Button>
+                    )}
                 </div>
                 <div className="flex space-x-4 text-sm text-muted-foreground">
                     <span>{user.posts_count} 投稿</span>
