@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .models import Community, CommunityMembership
 from .serializers import CommunitySerializer, CommunityMembershipSerializer
 from django.db import IntegrityError  # 追加
+from rest_framework.views import APIView
 
 
 class CommunityList(generics.ListCreateAPIView):
@@ -93,3 +94,31 @@ class UserCommunityList(generics.ListAPIView):
         user_id = self.kwargs.get('user_id')
         # Community.members は ManyToManyField なので、members__id でフィルタできます
         return Community.objects.filter(members__id=user_id)
+
+class CommunityJoinLeave(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            community = Community.objects.get(pk=pk)
+            membership, created = CommunityMembership.objects.get_or_create(
+                user=request.user, community=community
+            )
+            if created:
+                return Response({"detail": "Successfully joined the community."}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"detail": "You are already a member of this community."}, status=status.HTTP_400_BAD_REQUEST)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        try:
+            community = Community.objects.get(pk=pk)
+            membership = CommunityMembership.objects.filter(user=request.user, community=community).first()
+            if membership:
+                membership.delete()
+                return Response({"detail": "Successfully left the community."}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response({"detail": "You are not a member of this community."}, status=status.HTTP_400_BAD_REQUEST)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
