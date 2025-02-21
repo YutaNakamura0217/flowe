@@ -22,8 +22,6 @@ load_dotenv()
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG') == 'True'
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-04ts^(d)#47!3!=)ee!2#(v!+ym6)qu7v#+07_ilvra#=5h*)5'
@@ -145,12 +143,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS の設定
 CORS_ALLOW_CREDENTIALS = True 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",  # フロントエンドのOrigin
+    "http://127.0.0.1:3000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
-    # 必要に応じて他のドメインも追加
 ]
 
 

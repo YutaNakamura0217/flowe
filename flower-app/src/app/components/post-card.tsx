@@ -7,8 +7,6 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-
-// 追加: いいねトグル用フック
 import { useToggleLike } from "@/hooks/useToggleLike";
 
 interface PostCardProps {

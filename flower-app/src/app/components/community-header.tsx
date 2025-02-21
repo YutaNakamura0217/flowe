@@ -15,7 +15,7 @@ interface CommunityHeaderProps {
 }
 
 export function CommunityHeader({ community }: CommunityHeaderProps) {
-  const [isJoining, setIsJoining] = useState(false); // State to track joining/leaving
+  const [isJoining, setIsJoining] = useState(false);
   const csrfToken = useCsrfToken();
 
   const handleJoinLeave = async () => {
@@ -41,9 +41,8 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      // Optimistically update the is_member property
       community.is_member = !community.is_member;
-      // Optimistically update the members_count
+
       community.members_count += community.is_member ? 1 : -1;
 
     } catch (error) {
