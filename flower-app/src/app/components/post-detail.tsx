@@ -22,11 +22,11 @@ interface PostDetailProps {
     flowerType: string
     location: string
     user: {
-      id: string;
+      id: number;
       name: string;
       profile_image: string;
     };
-    tags?: string[]
+    tags?: string[];
   };
   currentUserId?: number;
 }
@@ -63,7 +63,7 @@ export function PostDetail({ post, currentUserId }: PostDetailProps) {
             <AvatarFallback>{post.user.name[0]}</AvatarFallback>
           </Avatar>
           <div>
-            <Link href={`/users/${post.user.name}`} className="font-medium hover:underline">
+            <Link href={`/users/${post.user.id}`} className="font-medium hover:underline">
               {post.user.name}
             </Link>
             <p className="text-sm text-muted-foreground">投稿者</p>

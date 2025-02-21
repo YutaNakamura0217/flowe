@@ -85,7 +85,7 @@ export default async function PostPage({
     flowerType: postData.variety_name,
     location: postData.location,
     user: {
-      id: postData.user.id.toString(),
+      id: postData.user.id,
       name: postData.user.display_name || postData.user.username,
       profile_image: postData.user.profile_image || "/placeholder.svg?user",
     },
