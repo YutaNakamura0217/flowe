@@ -63,7 +63,6 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
 
  return (
   <div className="min-h-screen flex flex-col">
-   <Header />
    <main className="flex-1">
     <CommunityHeader community={communityData} /> {/* APIから取得したデータを渡す */}
     <div className="container py-8">
