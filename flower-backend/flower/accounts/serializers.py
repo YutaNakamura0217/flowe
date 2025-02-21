@@ -76,5 +76,22 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return Follow.objects.filter(follower=obj).count()
 
     def get_display_name(self, obj):
-        """UserProfile の display_name を取得する"""
-        return obj.profile.display_name if obj.profile else ""
+        profile = getattr(obj, 'profile', None) # obj.profile が存在しない場合は None を返す
+        if profile:
+            return profile.display_name
+        else:
+            return ""
+    
+
+class FollowSerializer(serializers.ModelSerializer):
+    """フォロー関係をシリアライズする"""
+    class Meta:
+        model = Follow
+        fields = ['id', 'follower', 'following', 'created_at'] # 必要に応じてフィールドを追加・変更
+        read_only_fields = ['id', 'created_at'] # created_at は読み取り専用にするのが一般的
+
+    # バリデーション (オプション): フォロー/フォロー解除のビジネスロジックをここに記述することも可能
+    def validate(self, data):
+        if data['follower'] == data['following']:
+            raise serializers.ValidationError("You cannot follow yourself.")
+        return data

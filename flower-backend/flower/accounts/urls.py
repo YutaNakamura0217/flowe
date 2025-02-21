@@ -11,4 +11,6 @@ urlpatterns = [
     path('mypage/',views.mypage_view, name='mypage'),
     path('csrf/', views.get_csrf_token),
     path('users/<int:user_id>/', views.user_detail_view, name='user-detail'), 
+    path('users/<int:user_id>/follow/', views.FollowToggleView.as_view(), name='follow_toggle'), 
+    path('users/<int:user_id>/follow/status/', views.FollowStatusView.as_view(), name='follow_status'), 
 ]

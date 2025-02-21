@@ -10,13 +10,13 @@ interface MyPageData {
   bio: string;
   profile_image_url?: string;
   cover_image_url?: string;
-  posts: any[]; // 投稿の型が決まっていれば、例: Post[] に置き換えます
+  posts: any[];
   posts_count: number;
   followers_count: number;
   following_count: number;
   joined_date: string;
-  favorites: any;    // 型を明確にできる場合は適宜変更してください
-  communities: any;  // 型を明確にできる場合は適宜変更してください
+  favorites: any;
+  communities: any;
 }
 
 export function useMyPage() {
@@ -28,7 +28,7 @@ export function useMyPage() {
     try {
       const res = await fetch("https://127.0.0.1:8000/api/accounts/mypage/", {
         method: "GET",
-        credentials: "include", // セッションCookieを送る
+        credentials: "include",
       });
       if (res.ok) {
         const jsonData = await res.json();

@@ -11,9 +11,12 @@ from posts.models import Post
 from communities.models import Community
 from .models import Follow
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
+from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+
+from .models import Follow, Notification # Notification をインポート
+from .serializers import FollowSerializer # FollowSerializer をインポート
 User = get_user_model()
 
 
@@ -236,3 +239,63 @@ def user_detail_view(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     serializer = UserDetailSerializer(user, context={'request': request})
     return Response(serializer.data)
+
+
+class FollowToggleView(generics.GenericAPIView):
+    """
+    フォロー/フォロー解除APIビュー
+    """
+    permission_classes = [permissions.IsAuthenticated] # 認証済ユーザーのみアクセス可能
+
+    def post(self, request, user_id):
+        """
+        POSTリクエストでフォロー/フォロー解除を実行
+        """
+        try:
+            following_user = User.objects.get(pk=user_id) # フォロー/フォロー解除対象のユーザーを取得
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        if request.user.id == user_id: # 自分自身をフォロー/フォロー解除しようとした場合
+            return Response({"error": "You cannot follow/unfollow yourself."}, status=400)
+
+        follow_relation = Follow.objects.filter(
+            follower=request.user, following=following_user
+        )
+
+        if follow_relation.exists():
+            # フォロー済みの場合、フォロー解除
+            follow_relation.delete()
+            return Response({"status": "unfollowed"}) # フォロー解除成功のレスポンス
+        else:
+            # 未フォローの場合、フォロー
+            Follow.objects.create(follower=request.user, following=following_user)
+
+            # 通知を作成 (オプション)
+            Notification.objects.create(
+                recipient=following_user,
+                sender=request.user,
+                notification_type='follow',
+                follow=Follow.objects.filter(follower=request.user, following=following_user).first() # 作成された Follow インスタンスを紐付け
+            )
+
+            return Response({"status": "followed"}) # フォロー成功のレスポンス
+        
+class FollowStatusView(generics.RetrieveAPIView): # RetrieveAPIView を使用 (GETリクエスト用)
+  """
+  フォロー状態取得APIビュー
+  """
+  permission_classes = [permissions.IsAuthenticated] # 認証済ユーザーのみアクセス可能
+  serializer_class = serializers.Serializer # 特にシリアライズするデータはないので、Serializer を使用
+
+  def retrieve(self, request, user_id, *args, **kwargs):
+    try:
+      following_user = User.objects.get(pk=user_id) # フォロー状態を確認したいユーザー
+    except User.DoesNotExist:
+      return Response({"error": "User not found."}, status=404)
+
+    is_following = Follow.objects.filter(
+      follower=request.user, following=following_user
+    ).exists()
+
+    return Response({"is_following": is_following}) # フォロー状態 (真偽値) を返す
