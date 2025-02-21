@@ -111,6 +111,7 @@ class CommunityJoinLeave(APIView):
                 user=request.user, community=community
             )
             if created:
+                community.members.add(request.user)
                 return Response({"detail": "Successfully joined the community."}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"detail": "You are already a member of this community."}, status=status.HTTP_400_BAD_REQUEST)
@@ -123,6 +124,7 @@ class CommunityJoinLeave(APIView):
             membership = CommunityMembership.objects.filter(user=request.user, community=community).first()
             if membership:
                 membership.delete()
+                community.members.remove(request.user)
                 return Response({"detail": "Successfully left the community."}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({"detail": "You are not a member of this community."}, status=status.HTTP_400_BAD_REQUEST)

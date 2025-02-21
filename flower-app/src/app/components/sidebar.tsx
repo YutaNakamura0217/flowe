@@ -19,7 +19,6 @@ interface Event {
   title: string;
   date: string;
   attendees: number;
-  //... 他の必要なフィールド
 }
 
 interface SidebarProps {

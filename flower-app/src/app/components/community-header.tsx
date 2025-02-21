@@ -43,6 +43,8 @@ export function CommunityHeader({ community }: CommunityHeaderProps) {
 
       // Optimistically update the is_member property
       community.is_member = !community.is_member;
+      // Optimistically update the members_count
+      community.members_count += community.is_member ? 1 : -1;
 
     } catch (error) {
       console.error("Error joining/leaving community:", error);
