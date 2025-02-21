@@ -6,8 +6,10 @@ import { FloatingActionButton } from "@/components/floating-action-button";
 import { usePosts } from "@/hooks/usePosts";
 import { useCommunities } from "@/hooks/useCommunities";
 import { useEvents } from "@/hooks/useEvents";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 export default function HomePage() {
+  const csrfToken = useCsrfToken();
   // 投稿のカスタムフック
   const { posts, fetchPosts } = usePosts();
 
@@ -40,7 +42,7 @@ export default function HomePage() {
         <div className="lg:col-span-2">
           <div className="grid sm:grid-cols-2 gap-6">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} csrfToken={csrfToken} />
             ))}
           </div>
         </div>

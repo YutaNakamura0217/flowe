@@ -26,10 +26,11 @@ interface PostCardProps {
     created_at: string;
     updated_at: string;
   };
+  csrfToken: string; // Add csrfToken prop
 }
 
-export function PostCard({ post }: PostCardProps) {
-  // ローカルステートにlikesをコピー
+export function PostCard({ post, csrfToken }: PostCardProps) {
+   // ローカルステートにlikesをコピー
   const [likesCount, setLikesCount] = useState(post.likes);
 
   // いいねトグルフック
@@ -37,12 +38,10 @@ export function PostCard({ post }: PostCardProps) {
 
   // ボタンが押された時の処理
   const handleLikeClick = async () => {
-    const result = await toggleLike(post.id);
+    const result = await toggleLike(post.id, csrfToken); // Pass csrfToken
     if (result) {
       // APIから返ってきた最新のいいね数を反映
       setLikesCount(result.likes_count);
-      // 必要なら alert や toast などを表示
-      // alert(result.message); // "いいねしました" or "いいねを解除しました"
     }
   };
 

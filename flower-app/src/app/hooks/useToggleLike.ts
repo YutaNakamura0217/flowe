@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
 interface ToggleLikeResult {
   message: string;
   likes_count: number;
@@ -15,14 +14,15 @@ interface ToggleLikeResult {
 export function useToggleLike() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const csrfToken = useCsrfToken();
+
   /**
    * いいねのトグル処理
    * @param {number} postId いいねを操作する投稿ID
+   * @param {string} csrfToken CSRFトークン
    * @returns {Promise<ToggleLikeResult | null>}
    */
   const toggleLike = useCallback(
-    async (postId: number): Promise<ToggleLikeResult | null> => {
+    async (postId: number, csrfToken: string): Promise<ToggleLikeResult | null> => {
       setIsLoading(true);
       setError(null);
 
@@ -41,7 +41,6 @@ export function useToggleLike() {
         }
 
         const data: ToggleLikeResult = await response.json();
-        // data => { message: "...", likes_count: 123 }
 
         return data;
       } catch (err: any) {
@@ -52,7 +51,7 @@ export function useToggleLike() {
         setIsLoading(false);
       }
     },
-    [csrfToken]
+    [] // Removed csrfToken from dependency array
   );
 
   return {
