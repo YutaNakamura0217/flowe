@@ -68,7 +68,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     setError(null);
     try {
       const response = await fetch(
-        `https://127.0.0.1:8000/api/posts/community/${communityId}/`,  // Use the new endpoint
+        `https://127.0.0.1:8000/api/posts/?community=${communityId}`,  // Use the correct endpoint with query parameter
         {
           credentials: "include",
         }

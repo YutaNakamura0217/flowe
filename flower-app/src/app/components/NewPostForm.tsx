@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 interface NewPostFormProps {
   communityId: string;
@@ -15,6 +16,7 @@ const NewPostForm: React.FC<NewPostFormProps> = ({ communityId, onPostCreated })
   const [location, setLocation] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const csrfToken = useCsrfToken();
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,12 +49,16 @@ const NewPostForm: React.FC<NewPostFormProps> = ({ communityId, onPostCreated })
       const response = await fetch('https://127.0.0.1:8000/api/posts/', {
         method: 'POST',
         body: formData,
+        headers: {
+          'X-CSRFToken': csrfToken, // Include CSRF token in headers
+        },
         credentials: 'include',
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create post');
+        const errorMessage = errorData.detail || errorData.message || 'Failed to create post';
+        throw new Error(errorMessage);
       }
 
       // Reset form and trigger post refresh
