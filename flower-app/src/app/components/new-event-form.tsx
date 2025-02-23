@@ -52,7 +52,7 @@ const NewEventForm: React.FC<NewEventFormProps> = ({ communityId, onEventCreated
     };
 
     const endpoint = communityId
-      ? `https://127.0.0.1:8000/api/communities/${communityId}/events/`
+      ? `https://127.0.0.1:8000/api/events/communities/${communityId}/events/`
       : `https://127.0.0.1:8000/api/events/`;
 
     try {

@@ -12,7 +12,7 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { Community } from "@/components/types";
+import { CommunitySerializer } from "@/components/types";
 
 async function getCommunities() {
   const cookieStore = cookies();
@@ -31,7 +31,7 @@ async function getCommunities() {
   if (!res.ok) {
     throw new Error(`Failed to fetch communities: ${res.status}`);
   }
-  return res.json() as Promise<Community[]>;
+  return res.json() as Promise<CommunitySerializer[]>;
 }
 
 export default async function CommunityListPage() {

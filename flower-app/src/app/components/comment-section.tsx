@@ -1,9 +1,9 @@
 // components/comment-section.tsx
 "use client";
 
-import { useState } from "react";
-import { CommentList } from "./comment-list";
-import { CommentForm } from "./comment-form";
+import { useState, useEffect } from 'react';
+import { CommentList } from './comment-list';
+import { CommentForm } from './comment-form';
 
 interface Comment {
   id: string;
@@ -26,31 +26,33 @@ interface CommentAPIResponse {
   };
   text: string;
   created_at: string;
-  likes: number;
 }
 
 interface CommentSectionProps {
-  postId: string;
+  eventId: string;
   initialComments: Comment[];
 }
 
-export function CommentSection({ postId, initialComments }: CommentSectionProps) {
+export function CommentSection({ eventId, initialComments }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
 
   // コメント一覧を再フェッチする関数（更新用）
   const fetchComments = async () => {
-    const res = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
+    const res = await fetch(
+      `https://127.0.0.1:8000/api/events/${eventId}/comments/`,
+      { cache: 'no-cache' }
+    );
     if (res.ok) {
       const commentsData: CommentAPIResponse[] = await res.json();
       const newComments = commentsData.map((c) => ({
         id: c.id.toString(),
         user: {
           name: c.user.display_name || c.user.username,
-          profile_image: c.user.profile_image || "/placeholder.svg?user",
+          profile_image: c.user.profile_image || '/placeholder.svg?user',
         },
         text: c.text,
         createdAt: c.created_at,
-        likes: c.likes,
+        likes: 0, // Assuming likes are not part of the event comments for now
       }));
       setComments(newComments);
     }
@@ -62,12 +64,15 @@ export function CommentSection({ postId, initialComments }: CommentSectionProps)
     await fetchComments();
   };
 
+  useEffect(() => {
+    fetchComments();
+  }, [eventId]);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">コメント</h2>
       <CommentList comments={comments} />
-      <CommentForm postId={postId} onCommentPosted={handleCommentPosted} />
+      <CommentForm eventId={eventId} onCommentPosted={handleCommentPosted} />
     </div>
   );
 }
-

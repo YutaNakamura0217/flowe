@@ -10,7 +10,7 @@ interface EventDetailsProps {
     date: string
     location: string
     description: string
-    maxParticipants: number
+    maxParticipants: number | null;
     currentParticipants: number
     fee: number
     isParticipating: boolean

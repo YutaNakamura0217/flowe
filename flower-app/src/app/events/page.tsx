@@ -1,21 +1,10 @@
 "use client";
 
-"use client";
-
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { EventSearchBar } from "@/components/event-search-bar";
 import { EventList } from "@/components/event-list";
 import NewEventForm from "@/components/new-event-form";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationEllipsis,
-//   PaginationPrevious,
-//   PaginationNext,
-// } from "@/components/ui/pagination";
 
 interface Event {
   id: number;
@@ -87,32 +76,6 @@ export default function EventsPage() {
       </div>
       <NewEventForm onEventCreated={handleAddEvent} />
       <EventList events={events} />
-      {/* <div className="mt-8">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" isActive>
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">2</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">3</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div> */}
     </main>
   );
 }

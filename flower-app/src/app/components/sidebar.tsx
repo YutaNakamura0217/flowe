@@ -18,7 +18,7 @@ interface Event {
   id: number;
   title: string;
   date: string;
-  attendees: number;
+  attendees: [];
 }
 
 interface SidebarProps {
@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ communities, events }) => {
                             <h3 className="text-sm font-medium">{event.title}</h3>
                             <p className="text-xs text-muted-foreground">{event.date}</p>
                             <p className="text-xs text-muted-foreground">
-                                参加予定: {event.attendees}人
+                                参加予定: {event.attendees.length}人
                             </p>
                         </div>
                     ))}

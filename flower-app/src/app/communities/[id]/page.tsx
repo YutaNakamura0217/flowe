@@ -1,13 +1,11 @@
-
 "use client";
-import { Header } from "@/components/header";
 import { CommunityHeader } from "@/components/community-header";
 import { CommunityTabs } from "@/components/community-tabs";
 import { useEffect, useState } from "react";
-import NewPostForm from "@/components/NewPostForm";
-import NewEventForm from "@/components/new-event-form";
+import { NewPostModal } from "@/components/NewPostModal";
+import { NewEventModal } from "@/components/NewEventModal";
 
-// APIレスポンスの型定義 (必要に応じて詳細化)
+
 interface CommunityApiResponse {
   id: number;
   name: string;
@@ -19,18 +17,18 @@ interface CommunityApiResponse {
 }
 
 interface Post {
-    id: number;
-    user: any; // Replace 'any' with a more specific type if you have one
-    image_url: string;
-    caption: string;
-    likes: number;
-    comments: number;
-    created_at: string; // Or Date if you want to work with Date objects
-    updated_at: string; // Or Date
-    tags: string[]; // Assuming tags are strings
-    variety_name: string;
-    location: string;
-    public_status: string;
+  id: number;
+  user: any;
+  image_url: string;
+  caption: string;
+  likes: number;
+  comments: number;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+  variety_name: string;
+  location: string;
+  public_status: string;
 }
 
 export default function CommunityPage({ params }: { params: { id: string } }) {
@@ -38,8 +36,14 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
   const [posts, setPosts] = useState<Post[]>([]); // Separate state for posts
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  
+  // モーダルの開閉フラグ
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+
   const communityId = params.id;
 
+  // コミュニティ詳細を取得
   const fetchCommunityData = async () => {
     try {
       const response = await fetch(
@@ -51,25 +55,26 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       if (!response.ok) {
         throw new Error(`APIリクエストエラー: ${response.status}`);
       }
-      const data: CommunityApiResponse = (await response.json()) as CommunityApiResponse;
+      const data: CommunityApiResponse = await response.json();
       setCommunityData(data);
     } catch (e) {
       if (e instanceof Error) {
         setError(e);
-        console.error("データ取得中にエラーが発生しました:", e);
+        console.error("コミュニティ取得エラー:", e);
       } else {
         setError(new Error("不明なエラーが発生しました"));
-        console.error("不明なエラーが発生しました:", e);
+        console.error("不明なエラー:", e);
       }
     }
   };
 
-    const fetchPosts = async () => {
+  // 投稿一覧を取得
+  const fetchPosts = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `https://127.0.0.1:8000/api/posts/?community=${communityId}`,  // Use the correct endpoint with query parameter
+        `https://127.0.0.1:8000/api/posts/?community=${communityId}`,
         {
           credentials: "include",
         }
@@ -82,10 +87,10 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     } catch (e) {
       if (e instanceof Error) {
         setError(e);
-        console.error("データ取得中にエラーが発生しました:", e);
+        console.error("ポスト取得エラー:", e);
       } else {
         setError(new Error("不明なエラーが発生しました"));
-        console.error("不明なエラーが発生しました:", e);
+        console.error("不明なエラー:", e);
       }
     } finally {
       setLoading(false);
@@ -97,8 +102,9 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     fetchPosts();
   }, [communityId]);
 
-    const handlePostCreated = () => {
-    // Refetch posts after a new post is created
+  // 新規投稿後のコールバック
+  const handlePostCreated = () => {
+    // ポスト一覧を再取得
     fetchPosts();
   };
 
@@ -114,20 +120,61 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     return <div>コミュニティが見つかりませんでした。</div>;
   }
 
- return (
-  <div className="min-h-screen flex flex-col">
-   <main className="flex-1">
-    <CommunityHeader community={communityData} onJoinLeave={fetchCommunityData} /> {/* Pass the callback */}
-    <div className="container py-8">
-     {communityData.is_member && (
-      <>
-      <NewPostForm communityId={communityId} onPostCreated={handlePostCreated} />
-      <NewEventForm communityId={parseInt(communityId)} />
-      </>
-     )}
-     <CommunityTabs posts={posts} events={communityData.events} />
+  return (
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1">
+        <CommunityHeader
+          community={communityData}
+          onJoinLeave={fetchCommunityData}
+        />
+
+        <div className="container py-8">
+          {/* コミュニティ未参加のとき */}
+          {!communityData.is_member && (
+            <div className="bg-white p-4 rounded-md shadow-md text-center">
+              <p className="text-gray-600">
+                このコミュニティに参加して、投稿やイベントを閲覧しましょう！
+              </p>
+            </div>
+          )}
+
+          {/* 参加している場合: ボタンを表示し、クリックでモーダルを開く */}
+          {communityData.is_member && (
+            <div className="mb-4 flex gap-2">
+              <button
+                onClick={() => setShowPostModal(true)}
+                className="px-4 py-2 rounded bg-indigo-600 text-white"
+              >
+                新規投稿
+              </button>
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="px-4 py-2 rounded bg-green-600 text-white"
+              >
+                新規イベント
+              </button>
+            </div>
+          )}
+
+          {/* 投稿一覧・イベント一覧 */}
+          <CommunityTabs posts={posts} events={communityData.events} />
+        </div>
+      </main>
+
+      {/* 新規投稿モーダル */}
+      <NewPostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onPostCreated={handlePostCreated}
+        communityId={communityId}
+      />
+
+      {/* 新規イベントモーダル */}
+      <NewEventModal
+        isOpen={showEventModal}
+        onClose={() => setShowEventModal(false)}
+        communityId={parseInt(communityId)}
+      />
     </div>
-   </main>
-  </div>
- );
+  );
 }

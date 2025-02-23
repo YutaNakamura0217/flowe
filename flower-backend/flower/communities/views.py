@@ -22,7 +22,7 @@ class CommunityList(generics.ListCreateAPIView):
 
 
 class CommunityDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Community.objects.prefetch_related('posts')
+    queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # 読み取りは誰でも
 

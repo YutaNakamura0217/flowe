@@ -1,3 +1,4 @@
+// src/app/page.tsx
 "use client";
 import { PostCard } from "@/components/post-card";
 import { Sidebar } from "@/components/sidebar";
@@ -7,18 +8,33 @@ import { usePosts } from "@/hooks/usePosts";
 import { useCommunities } from "@/hooks/useCommunities";
 import { useEvents } from "@/hooks/useEvents";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const csrfToken = useCsrfToken();
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
   // 投稿のカスタムフック
   const { posts, fetchPosts } = usePosts();
 
   // コミュニティのカスタムフック
   const { communities, fetchCommunities } = useCommunities();
 
-  // イベントのカスタムフック
-  const { events, fetchEvents } = useEvents();
+  // イベントのカスタムフック (pass csrfToken correctly!)
+  const { events, fetchEvents } = useEvents(csrfToken);
 
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (loading || !isAuthenticated) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

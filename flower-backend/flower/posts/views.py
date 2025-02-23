@@ -37,10 +37,10 @@ class PostList(generics.ListCreateAPIView):
                     user=self.request.user, community_id=community_id
                 ).exists()
                 if not membership:
-                    raise PermissionDenied('You are not a member of this community.')
+                    return Post.objects.none()  # Return an empty queryset
                 queryset = queryset.filter(community=community_id)
             else:
-                raise PermissionDenied("You must be logged in to view this community's posts.")
+                return Post.objects.none()  # Return an empty queryset for unauthenticated users
 
         return queryset
 

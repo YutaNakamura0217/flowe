@@ -159,9 +159,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 AUTH_USER_MODEL = 'auth.User'
 
 SESSION_COOKIE_SAMESITE = 'None'
-# SESSION_COOKIE_SECURE = True  # Disable during development with HTTP frontend
+SESSION_COOKIE_SECURE = not DEBUG  # Disable during development with HTTP frontend
 
-# CSRF_COOKIE_SECURE = True  # Disable during development with HTTP frontend
+CSRF_COOKIE_SECURE = not DEBUG  # Disable during development with HTTP frontend
 CSRF_COOKIE_SAMESITE = 'None'
-
-# TODO: Re-enable SESSION_COOKIE_SECURE and CSRF_COOKIE_SECURE for production
