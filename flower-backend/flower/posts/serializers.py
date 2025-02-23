@@ -109,7 +109,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ("bio", "cover_image", "profile_image")
 
 
-class UserDetailSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """
     ユーザー詳細情報用シリアライザ
     - profile: プロフィール
@@ -151,11 +151,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
         # ユーザーがフォローしている数を数える例
         # 例: return obj.following.count()
         return 0
-    
+
 
 class DetailedPostSerializer(serializers.ModelSerializer):
     # ユーザー詳細版をネスト
-    user = UserDetailSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     # タグを文字列としてリスト化
     tags = serializers.SlugRelatedField(

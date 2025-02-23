@@ -42,7 +42,7 @@ class UserProfileOnlySerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['bio', 'cover_image', 'profile_image']
 
-class UserDetailSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """
     ユーザー詳細情報を返すシリアライザー
     (あなたの interface User に合わせたフィールド)

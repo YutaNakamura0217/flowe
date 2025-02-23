@@ -1,18 +1,21 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { EventSearchBar } from "@/components/event-search-bar";
 import { EventList } from "@/components/event-list";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationEllipsis,
-  PaginationPrevious,
-  PaginationNext,
-} from "@/components/ui/pagination";
+import NewEventForm from "@/components/new-event-form";
+// import {
+//   Pagination,
+//   PaginationContent,
+//   PaginationItem,
+//   PaginationLink,
+//   PaginationEllipsis,
+//   PaginationPrevious,
+//   PaginationNext,
+// } from "@/components/ui/pagination";
 
 interface Event {
   id: number;
@@ -43,7 +46,9 @@ export default function EventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("https://127.0.0.1:8000/api/events/");
+        const res = await fetch("https://127.0.0.1:8000/api/events/", {
+          credentials: 'include',
+        });
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -69,6 +74,10 @@ export default function EventsPage() {
   if (loading) return <div>loading...</div>;
   if (error) return <div>{error}</div>;
 
+  const handleAddEvent = (newEvent: Event) => {
+    setEvents([newEvent, ...events]);
+  };
+
   return (
     <main className="flex-1 container py-8">
       <Breadcrumb items={breadcrumbItems} />
@@ -76,8 +85,9 @@ export default function EventsPage() {
       <div className="mb-8">
         <EventSearchBar />
       </div>
+      <NewEventForm onEventCreated={handleAddEvent} />
       <EventList events={events} />
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -102,7 +112,7 @@ export default function EventsPage() {
             </PaginationItem>
           </PaginationContent>
         </Pagination>
-      </div>
+      </div> */}
     </main>
   );
 }

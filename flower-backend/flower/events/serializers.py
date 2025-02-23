@@ -1,18 +1,30 @@
 from rest_framework import serializers
-from events.models import Event, EventAttendance
-from serializers.nested import NestedUserSerializer, NestedCommunitySerializer
+from .models import Event, EventAttendance
+from accounts.serializers import UserSerializer
+from communities.serializers import CommunitySerializer
+from communities.models import Community
+
+class EventAttendanceSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = EventAttendance
+        fields = ['user', 'attended_at']
 
 class EventSerializer(serializers.ModelSerializer):
-    organizer = NestedUserSerializer(read_only=True)
-    community = NestedCommunitySerializer(read_only=True)
-    attendees_count = serializers.SerializerMethodField()
+    organizer = UserSerializer(read_only=True)
+    community = CommunitySerializer(read_only=True)
+    attendees = UserSerializer(many=True, read_only=True)
+    attendance = EventAttendanceSerializer(source='eventattendance_set', many=True, read_only=True)
 
     class Meta:
         model = Event
-        fields = (
-            'id', 'organizer', 'community', 'title', 'description', 'date',
-            'location', 'capacity', 'fee', 'created_at', 'attendees_count', 'is_community_only'
-        )
+        fields = ['id', 'organizer', 'community', 'title', 'description', 'date', 'location', 'capacity', 'fee', 'attendees', 'created_at', 'is_community_only', 'attendance']
 
-    def get_attendees_count(self, obj):
-        return EventAttendance.objects.filter(event=obj).count()
+class EventCreateSerializer(serializers.ModelSerializer):
+    community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all(), required=False)
+    organizer = UserSerializer(read_only=True)
+    attendees = UserSerializer(many=True, read_only=True)
+    class Meta:
+        model = Event
+        fields = ['id', 'organizer', 'community', 'title', 'description', 'date', 'location', 'capacity', 'fee', 'attendees', 'created_at', 'is_community_only']

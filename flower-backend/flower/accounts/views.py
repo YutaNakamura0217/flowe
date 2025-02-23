@@ -227,7 +227,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import permissions
 from django.shortcuts import get_object_or_404
-from .serializers import UserDetailSerializer
+from .serializers import UserSerializer
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])  # or IsAuthenticatedなど適宜
@@ -237,7 +237,7 @@ def user_detail_view(request, user_id):
     """
     User = get_user_model()
     user = get_object_or_404(User, pk=user_id)
-    serializer = UserDetailSerializer(user, context={'request': request})
+    serializer = UserSerializer(user, context={'request': request})
     return Response(serializer.data)
 
 

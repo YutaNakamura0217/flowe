@@ -16,7 +16,7 @@ import { Community } from "@/components/types";
 
 async function getCommunities() {
   const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('sessionid')?.value; // Djangoのsessionid
+  const sessionCookie = cookieStore.get('sessionid')?.value;
 
   const headers = new Headers();
   if (sessionCookie) {

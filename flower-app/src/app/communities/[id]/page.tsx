@@ -5,6 +5,7 @@ import { CommunityHeader } from "@/components/community-header";
 import { CommunityTabs } from "@/components/community-tabs";
 import { useEffect, useState } from "react";
 import NewPostForm from "@/components/NewPostForm";
+import NewEventForm from "@/components/new-event-form";
 
 // APIレスポンスの型定義 (必要に応じて詳細化)
 interface CommunityApiResponse {
@@ -119,7 +120,10 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     <CommunityHeader community={communityData} onJoinLeave={fetchCommunityData} /> {/* Pass the callback */}
     <div className="container py-8">
      {communityData.is_member && (
+      <>
       <NewPostForm communityId={communityId} onPostCreated={handlePostCreated} />
+      <NewEventForm communityId={parseInt(communityId)} />
+      </>
      )}
      <CommunityTabs posts={posts} events={communityData.events} />
     </div>
