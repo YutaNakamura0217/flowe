@@ -165,8 +165,13 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'auth.User'
 
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True  # Disable during development with HTTP frontend
 
-CSRF_COOKIE_SECURE = False  # Disable during development with HTTP frontend
+
+#####################################################################################
+## 下記は絶対に変更しない！！(認証情報の受け渡しがうまくいかなくなるので)
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SECURE = False 
 CSRF_COOKIE_SAMESITE = 'None'
+######################################################################################
