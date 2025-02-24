@@ -1,8 +1,10 @@
+// src/app/layout.tsx
+import { AuthProvider } from "@/contexts/AuthContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import type React from "react";
-import { Header } from "@/components/header"; // Header をインポート
+import { Header } from "@/components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,8 +31,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} font-body min-h-screen bg-background`}>
-        <Header />
-        {children}
+        <AuthProvider>
+          <Header />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
