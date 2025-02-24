@@ -7,7 +7,7 @@ import NewEventForm from "./new-event-form";
 interface NewEventModalProps {
   isOpen: boolean;               // モーダル表示フラグ
   onClose: () => void;          // モーダルを閉じるコールバック
-  communityId: number;          // コミュニティID (number型)
+  communityId?: number;          // コミュニティID (number型)
   onEventCreated?: (id: number) => void;
 }
 

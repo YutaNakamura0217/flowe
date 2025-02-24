@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { EventSearchBar } from "@/components/event-search-bar";
 import { EventList } from "@/components/event-list";
-import NewEventForm from "@/components/new-event-form";
+import { NewEventModal } from "@/components/NewEventModal";
 
 interface Event {
   id: number;
@@ -34,8 +34,20 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Add state for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // 現在のページ番号
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+    const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
 
   useEffect(() => {
     async function fetchEvents(page: number) {
@@ -67,16 +79,31 @@ export default function EventsPage() {
     { label: "イベント", href: "/events" },
   ];
 
-  const handleAddEvent = (newEvent: Event) => {
-    // 新規作成したイベントを先頭に追加
-    setEventsData((prev) => ({
-      ...prev,
-      results: [newEvent, ...prev.results],
-      count: prev.count + 1,
-    }));
+  const handleAddEvent = (eventId: number) => {
+    // Fetch the newly created event and add it to the list
+    async function fetchNewEvent() {
+      try {
+        const res = await fetch(`https://127.0.0.1:8000/api/events/${eventId}/`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const newEvent = await res.json();
+            setEventsData((prev) => ({
+                ...prev,
+                results: [newEvent, ...prev.results],
+                count: prev.count + 1,
+            }));
+
+      } catch (err) {
+        console.error("Error fetching new event:", err);
+      }
+    }
+    fetchNewEvent()
   };
 
-  // ページ移動ハンドラー
+    // ページ移動ハンドラー
   const goToNextPage = () => {
     // nextがnullでなければ currentPage + 1 へ
     if (eventsData.next) {
@@ -102,7 +129,18 @@ export default function EventsPage() {
         <EventSearchBar />
       </div>
 
-      <NewEventForm onEventCreated={handleAddEvent} />
+      <button
+        onClick={openModal}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        イベント作成
+      </button>
+
+      <NewEventModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onEventCreated={handleAddEvent}
+      />
 
       {/* イベント表示 */}
       <EventList events={eventsData.results} />
@@ -128,4 +166,3 @@ export default function EventsPage() {
     </main>
   );
 }
-
