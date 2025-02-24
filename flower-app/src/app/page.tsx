@@ -8,7 +8,7 @@ import { usePosts } from "@/hooks/usePosts";
 import { useCommunities } from "@/hooks/useCommunities";
 import { useEvents } from "@/hooks/useEvents";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 

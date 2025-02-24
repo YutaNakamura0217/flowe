@@ -4,7 +4,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 import { PostDetail } from "@/components/post-detail";
