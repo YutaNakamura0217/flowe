@@ -53,7 +53,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       );
       if (!response.ok) {
         throw new Error(`APIリクエストエラー: ${response.status}`);
-        throw new Error(`APIリクエストエラー: ${response.status}`);
+        
       }
       const data: CommunityApiResponse = await response.json();
       setCommunityData(data);
