@@ -29,13 +29,14 @@ interface PostDetailProps {
     tags?: string[];
   };
   currentUserId?: number;
+  csrfToken: string; // Add csrfToken prop
 }
 
-export function PostDetail({ post, currentUserId }: PostDetailProps) {
+export function PostDetail({ post, currentUserId, csrfToken }: PostDetailProps) {
   const [likesCount, setLikesCount] = useState<number>(post.likes)
   const { toggleLike, isLoading, error } = useToggleLike()
   const handleLikeClick = async () => {
-    const result = await toggleLike(Number(post.id))
+    const result = await toggleLike(Number(post.id), csrfToken) // Pass csrfToken
     if (result) {
       setLikesCount(result.likes_count)
     }

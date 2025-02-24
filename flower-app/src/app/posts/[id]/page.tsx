@@ -1,7 +1,16 @@
 // app/posts/[id]/page.tsx
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { useAuth } from "@/hooks/useAuth";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
+
 import { PostDetail } from "@/components/post-detail";
 import { CommentSection } from "@/components/comment-section";
 
+// APIレスポンス型 (必要に応じて修正してください)
 interface PostAPIResponse {
   id: number;
   user: {
@@ -46,76 +55,136 @@ interface Comment {
   likes: number;
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const postId = params.id;
+/**
+ * PostPage: ポスト詳細ページ
+ */
+export default function PostPage({ params }: { params: { id: string } }) {
+  // Next.js 13 のルーティングパラメータ
+  const { id: postId } = params;
 
-  // 投稿データの取得
-  const postRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/`, { cache: "no-cache" });
-  if (!postRes.ok) {
-    throw new Error("Failed to fetch post data");
-  }
-  const postData: PostAPIResponse = await postRes.json();
+  // ログイン認証フック
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
-  // Fetch the current user's data.  This assumes there's an API endpoint
-  // at /api/accounts/mypage/ that returns the logged-in user's information.
-  // The credentials: "include" option is necessary to send cookies with the
-  // request, which is essential for authentication.
-    const userRes = await fetch(`https://127.0.0.1:8000/api/accounts/mypage/`, {
-        method: "GET",
-        credentials: "include",
-        cache: "no-cache"
-    });
+  // ルータ
+  const router = useRouter();
 
-    let currentUserData = null;
-    if (userRes.ok) {
-        currentUserData = await userRes.json();
+  // CSRF トークン (クライアントサイドで Django にアクセスしてクッキーをセット)
+  const csrfToken = useCsrfToken();
+
+  // ポスト & コメント データをステートで管理
+  const [post, setPost] = useState<any>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 現在ログイン中のユーザ情報
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // 1) 未ログイン時に /login へリダイレクト
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
     }
+  }, [authLoading, isAuthenticated, router]);
 
+  // 2) ページマウント時にデータを取得
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      fetchAllData();
+    }
+  }, [authLoading, isAuthenticated]);
 
-  const post = {
-    id: postData.id.toString(),
-    imageUrl: postData.image_url || "/placeholder.svg",
-    caption: postData.caption,
-    likes: postData.likes,
-    comments: postData.comments,
-    flowerType: postData.variety_name,
-    location: postData.location,
-    user: {
-      id: postData.user.id,
-      name: postData.user.display_name || postData.user.username,
-      profile_image: postData.user.profile_image || "/placeholder.svg?user",
-    },
-    createdAt: postData.created_at,
-    tags: postData.tags,
-  };
+  // すべてのデータを一括で取得
+  async function fetchAllData() {
+    try {
+      setLoading(true);
 
-  // 初期コメントデータの取得
-    const commentsRes = await fetch(`https://127.0.0.1:8000/api/posts/${postId}/comments/`, { cache: "no-cache" });
-  let initialComments: Comment[] = [];
-  if (commentsRes.ok) {
-    const commentsData: CommentAPIResponse[] = await commentsRes.json();
-    initialComments = commentsData.map((c) => ({
-      id: c.id.toString(),
-      user: {
-        name: c.user.display_name || c.user.username,
-        profile_image: c.user.profile_image || "/placeholder.svg?user",
-      },
-      text: c.text,
-      createdAt: c.created_at,
-      likes: c.likes,
-    }));
+      // ユーザ情報取得
+      const userRes = await fetch("https://127.0.0.1:8000/api/accounts/mypage/", {
+        method: "GET",
+        credentials: "include", // Cookieを送る
+        cache: "no-cache",
+      });
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        setCurrentUserId(userData.id);
+      }
+
+      // 投稿データ
+      const postRes = await fetch(
+        `https://127.0.0.1:8000/api/posts/${postId}/`,
+        {
+          cache: "no-cache",
+          credentials: "include",
+        }
+      );
+      if (!postRes.ok) {
+        throw new Error("Failed to fetch post data");
+      }
+      const postData: PostAPIResponse = await postRes.json();
+      setPost({
+        id: postData.id.toString(),
+        imageUrl: postData.image_url || "/placeholder.svg",
+        caption: postData.caption,
+        likes: postData.likes,
+        comments: postData.comments,
+        flowerType: postData.variety_name,
+        location: postData.location,
+        user: {
+          id: postData.user.id,
+          name: postData.user.display_name || postData.user.username,
+          profile_image: postData.user.profile_image || "/placeholder.svg?user",
+        },
+        createdAt: postData.created_at,
+        tags: postData.tags,
+      });
+
+      // コメントデータ
+      const commentsRes = await fetch(
+        `https://127.0.0.1:8000/api/posts/${postId}/comments/`,
+        { cache: "no-cache", credentials: "include" }
+      );
+      if (commentsRes.ok) {
+        const commentsData: CommentAPIResponse[] = await commentsRes.json();
+        const mappedComments: Comment[] = commentsData.map((c) => ({
+          id: c.id.toString(),
+          user: {
+            name: c.user.display_name || c.user.username,
+            profile_image: c.user.profile_image || "/placeholder.svg?user",
+          },
+          text: c.text,
+          createdAt: c.created_at,
+          likes: c.likes,
+        }));
+        setComments(mappedComments);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ローディング or 未ログイン時
+  if (authLoading || !isAuthenticated || loading) {
+    return <div>Loading...</div>;
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          <PostDetail post={post} currentUserId={currentUserData?.id} />
-          <CommentSection postId={postId} initialComments={initialComments} />
+          {post && (
+            <PostDetail
+              post={post}
+              currentUserId={currentUserId ?? undefined}
+              csrfToken={csrfToken}
+            />
+          )}
+          <CommentSection
+            resourceType="post"
+            resourceId={postId}
+            initialComments={comments}
+          />
         </div>
       </main>
     </div>

@@ -4,12 +4,14 @@ from .models import Community, CommunityMembership
 from .serializers import CommunitySerializer, CommunityMembershipSerializer
 from django.db import IntegrityError  # 追加
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 
 class CommunityList(generics.ListCreateAPIView):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = PageNumberPagination  # Add pagination
 
     def perform_create(self, serializer):  # 新規作成時に実行
         serializer.save()

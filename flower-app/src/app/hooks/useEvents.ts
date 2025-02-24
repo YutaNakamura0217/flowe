@@ -1,5 +1,4 @@
 // src/app/hooks/useEvents.ts
-
 import { useState, useCallback, useEffect } from "react";
 
 export interface EventData {
@@ -9,17 +8,23 @@ export interface EventData {
   attendees: [];
 }
 
+interface PaginatedEvents {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: EventData[];
+}
+
 export function useEvents(csrfToken: string) {
   const [events, setEvents] = useState<EventData[]>([]);
 
   const fetchEvents = useCallback(async () => {
     try {
-      // Include your CSRF token in the headers:
       const response = await fetch("https://127.0.0.1:8000/api/events/", {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken, // Pass it here
+          "X-CSRFToken": csrfToken,
         },
       });
       console.log("useEvents response status:", response.status);
@@ -28,8 +33,9 @@ export function useEvents(csrfToken: string) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setEvents(data);
+      const data = (await response.json()) as PaginatedEvents;
+      // ページネーション対応 → data.results（イベント配列）だけを state に保存
+      setEvents(data.results);
     } catch (error) {
       console.error("Error fetching events:", error);
     }

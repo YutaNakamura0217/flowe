@@ -1,9 +1,9 @@
-// components/comment-section.tsx
+// comment-section.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { CommentList } from './comment-list';
-import { CommentForm } from './comment-form';
+import { useState, useEffect } from "react";
+import { CommentList } from "./comment-list";
+import { CommentForm } from "./comment-form";
 
 interface Comment {
   id: string;
@@ -29,50 +29,61 @@ interface CommentAPIResponse {
 }
 
 interface CommentSectionProps {
-  eventId: string;
+  resourceType: "event" | "post";  // イベントか投稿かを示す
+  resourceId: string;             // ID
   initialComments: Comment[];
 }
 
-export function CommentSection({ eventId, initialComments }: CommentSectionProps) {
+export function CommentSection({
+  resourceType,
+  resourceId,
+  initialComments,
+}: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
 
   // コメント一覧を再フェッチする関数（更新用）
   const fetchComments = async () => {
-    const res = await fetch(
-      `https://127.0.0.1:8000/api/events/${eventId}/comments/`,
-      { cache: 'no-cache' }
-    );
+    // イベント or 投稿かでURLを変える
+    const url =
+      resourceType === "event"
+        ? `https://127.0.0.1:8000/api/events/${resourceId}/comments/`
+        : `https://127.0.0.1:8000/api/posts/${resourceId}/comments/`;
+
+    const res = await fetch(url, { cache: "no-cache" });
     if (res.ok) {
       const commentsData: CommentAPIResponse[] = await res.json();
       const newComments = commentsData.map((c) => ({
         id: c.id.toString(),
         user: {
           name: c.user.display_name || c.user.username,
-          profile_image: c.user.profile_image || '/placeholder.svg?user',
+          profile_image: c.user.profile_image || "/placeholder.svg?user",
         },
         text: c.text,
         createdAt: c.created_at,
-        likes: 0, // Assuming likes are not part of the event comments for now
+        likes: 0, // イベントのCommentsAPIにlikesがあればここを調整
       }));
       setComments(newComments);
     }
   };
 
-  // CommentFormから呼ばれるハンドラ
+  // 新規コメント送信後に再フェッチ
   const handleCommentPosted = async (newCommentText: string) => {
-    // 新規コメントを投稿した後、最新のコメント一覧を取得
     await fetchComments();
   };
 
   useEffect(() => {
     fetchComments();
-  }, [eventId]);
+  }, [resourceType, resourceId]);
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">コメント</h2>
       <CommentList comments={comments} />
-      <CommentForm eventId={eventId} onCommentPosted={handleCommentPosted} />
+      <CommentForm
+        resourceType={resourceType}
+        resourceId={resourceId}
+        onCommentPosted={handleCommentPosted}
+      />
     </div>
   );
 }

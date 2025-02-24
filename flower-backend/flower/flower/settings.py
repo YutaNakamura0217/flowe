@@ -65,6 +65,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'flower.urls'
 
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

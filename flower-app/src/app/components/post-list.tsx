@@ -1,16 +1,29 @@
-import { PostCard } from "@/components/post-card"
+import { PostCard } from "./post-card"
+import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { Post } from "@/hooks/usePosts";
 
-interface PostListProps {
-  posts: any[]
+interface PaginatedPosts {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Post[];
 }
 
-export function PostList({ posts }: PostListProps) {
+interface PostListProps {
+  postData: PaginatedPosts;
+}
+
+export function PostList({ postData }: PostListProps) {
+  const csrfToken = useCsrfToken();
+  // 実際に配列として描画したい部分は postData.results
   return (
-    <div className="space-y-6">
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+    <div>
+      {postData.results.map((post) => (
+        <PostCard key={post.id} post={post} csrfToken={csrfToken} />
       ))}
+
+      {/* ページ情報などを表示したい場合 */}
+      <div>全 {postData.count} 件</div>
     </div>
   )
 }
-

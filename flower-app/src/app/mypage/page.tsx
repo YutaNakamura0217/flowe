@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import { ProfileHeader } from "@/components/profile-header";
 import { UserStats } from "@/components/user-stats";
 import { ProfileTabs } from "@/components/profile-tabs";
@@ -7,11 +6,9 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { useMyPage } from "@/hooks/useMyPage";
 import { FloatingActionButton } from "@/components/floating-action-button";
 
-
 export default function MyPage() {
-
   // マイページ情報の取得（独自フック使用）
-  const { data, loading, fetchMyPage } = useMyPage();
+  const { data, loading, fetchMyPage, currentPage, setCurrentPage } = useMyPage();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -29,13 +26,11 @@ export default function MyPage() {
       cover_image: data.cover_image_url || "/placeholder.svg?cover",
       profile_image: data.profile_image_url || "/placeholder-avatar.svg",
     },
-    posts: data.posts,
     posts_count: data.posts_count,
     followers_count: data.followers_count,
     following_count: data.following_count,
     joinedDate: data.joined_date,
   };
-
 
   const breadcrumbItems = [
     { label: "ホーム", href: "/" },
@@ -55,7 +50,7 @@ export default function MyPage() {
             joinedDate={user.joinedDate}
           />
         </div>
-        {/* 投稿一覧は usePosts フックで管理している posts を渡す */}
+        {/* 投稿一覧は useMyPage フックで管理している posts を渡す */}
         <ProfileTabs
           posts={data.posts}
           favorites={data.favorites}
@@ -64,7 +59,8 @@ export default function MyPage() {
       </div>
 
       {/* FAB をクリックするとモーダルを表示 */}
-      <FloatingActionButton onPostCreated={fetchMyPage} />
+      {/* 新規投稿後に最初のページを再読み込み */}
+      <FloatingActionButton onPostCreated={() => setCurrentPage(1)} />
     </main>
   );
 }

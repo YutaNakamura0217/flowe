@@ -12,13 +12,22 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+// URLからページ番号を抽出するヘルパー関数
+const getPageNumberFromUrl = (url: string | null): number => {
+  if (!url) {
+    return 1;
+  }
+  const match = url.match(/page=(\d+)/);
+  return match ? parseInt(match[1]) : 1;
+};
+
 export default function HomePage() {
   const csrfToken = useCsrfToken();
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   // 投稿のカスタムフック
-  const { posts, fetchPosts } = usePosts();
+  const { posts, postData, setCurrentPage } = usePosts();
 
   // コミュニティのカスタムフック
   const { communities, fetchCommunities } = useCommunities();
@@ -61,7 +70,30 @@ export default function HomePage() {
               <PostCard key={post.id} post={post} csrfToken={csrfToken} />
             ))}
           </div>
+        
+          {/* ページネーション */}
+          {postData && (
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={() =>
+                  setCurrentPage(getPageNumberFromUrl(postData.previous))
+                }
+                disabled={!postData.previous}
+                className="px-4 py-2 mx-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                前へ
+              </button>
+              <button
+                onClick={() => setCurrentPage(getPageNumberFromUrl(postData.next))}
+                disabled={!postData.next}
+                className="px-4 py-2 mx-1 bg-gray-200 rounded disabled:opacity-50"
+              >
+                次へ
+              </button>
+            </div>
+          )}
         </div>
+
 
         {/* サイドバー */}
         <div className="hidden lg:block">
@@ -72,7 +104,7 @@ export default function HomePage() {
       </div>
 
       {/* FAB → 新規投稿モーダル → 投稿完了時に fetchPosts() を呼ぶ */}
-      <FloatingActionButton onPostCreated={fetchPosts} />
+      <FloatingActionButton onPostCreated={() => setCurrentPage(1)} />
     </div>
   );
 }

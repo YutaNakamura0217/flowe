@@ -1,15 +1,26 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState } from "react";
+import { useParams } from "next/navigation";
 
-import { EventDetails } from '@/components/event-details';
-import { GoogleMap } from '@/components/google-map';
-import { ParticipantList } from '@/components/participant-list';
-import { CommentSection } from '@/components/comment-section';
+import { EventDetails } from "@/components/event-details";
+import { GoogleMap } from "@/components/google-map";
+import { ParticipantList } from "@/components/participant-list";
+import { CommentSection } from "@/components/comment-section";
 
-import { useCsrfToken } from '@/hooks/useCsrfToken';
-import { useEventDetail } from '@/hooks/useEventDetail';
+import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useEventDetail } from "@/hooks/useEventDetail";
+
+interface Comment {
+  id: string;
+  user: {
+    name: string;
+    profile_image: string;
+  };
+  text: string;
+  createdAt: string;
+  likes: number;
+}
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -30,11 +41,11 @@ export default function EventDetailPage() {
       const response = await fetch(
         `https://127.0.0.1:8000/api/events/${eventId}/attendance/`,
         {
-          method: 'POST',
-          credentials: 'include',
+          method: "POST",
+          credentials: "include",
           headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({}),
         }
@@ -42,10 +53,8 @@ export default function EventDetailPage() {
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.detail || 'Failed to join event');
+        throw new Error(data.detail || "Failed to join event");
       }
-
-      // イベントデータを再取得して参加者のリストを更新
       refetch && refetch();
     } catch (error: any) {
       setJoinError(error.message);
@@ -54,31 +63,24 @@ export default function EventDetailPage() {
     }
   };
 
-  // ロード中またはエラー処理
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (error) {
-    return <div>Error: {(error as Error).message}</div>;
-  }
-  if (!event) {
-    return <div>Event not found</div>;
-  }
+  // ロード中やエラーのハンドリング
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {(error as Error).message}</div>;
+  if (!event) return <div>Event not found</div>;
 
-  // 日付フォーマット(例)
-  const formattedDate = new Date(event.date).toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  // イベント詳細
+  const formattedDate = new Date(event.date).toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
-  // EventDetails に渡す形式
   const eventDataForDetails = {
     id: event.id.toString(),
     title: event.title,
-    organizer: event.organizer?.display_name ?? event.organizer?.username ?? '不明',
+    organizer: event.organizer?.display_name ?? event.organizer?.username ?? "不明",
     date: formattedDate,
     location: event.location,
     description: event.description,
@@ -88,12 +90,23 @@ export default function EventDetailPage() {
     isParticipating: false,
   };
 
-  // ParticipantList に渡す形式
+  // 参加者リスト
   const participants = (event.attendees || []).map((attendee: any) => ({
     id: attendee.id.toString(),
-    name: attendee.display_name ?? attendee.username ?? '名無しさん',
-    avatar: attendee.profile?.profile_image || '/placeholder.svg',
+    name: attendee.display_name ?? attendee.username ?? "名無しさん",
+    avatar: attendee.profile?.profile_image || "/placeholder.svg",
   }));
+
+  // 初期コメント（サンプル: 空配列）
+  let initialComments: Comment[] = [];
+
+  // ★ ここでコメントAPIを呼んで initialComments を作れば、最初からコメントを表示できる
+  //  例: 
+  //   const commentRes = await fetch(`https://...`);
+  //   if (commentRes.ok) {
+  //     const data = await commentRes.json();
+  //     initialComments = data.map((d: any) => ... );
+  //   }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -107,7 +120,11 @@ export default function EventDetailPage() {
             <GoogleMap address={event.location} />
 
             {/* コメントセクション */}
-            <CommentSection eventId={eventId.toString()} initialComments={[]} />
+            <CommentSection
+              resourceType="event"
+              resourceId={String(eventId)}
+              initialComments={initialComments}
+            />
           </div>
 
           <div className="space-y-8">
@@ -117,7 +134,7 @@ export default function EventDetailPage() {
             {/* 参加ボタン */}
             <div>
               <button onClick={joinEvent} disabled={isJoining}>
-                {isJoining ? 'Joining...' : 'Join Event'}
+                {isJoining ? "Joining..." : "Join Event"}
               </button>
               {joinError && <p className="text-red-500 mt-2">Error: {joinError}</p>}
             </div>

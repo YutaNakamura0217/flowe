@@ -2,6 +2,13 @@
 
 import { useState, useCallback, useEffect } from "react";
 
+interface Post {
+  id: number;
+  image_url: string;
+  likes: number;
+  comments: number;
+}
+
 // MyPageData インターフェースの定義例
 interface MyPageData {
   id: number;
@@ -10,7 +17,7 @@ interface MyPageData {
   bio: string;
   profile_image_url?: string;
   cover_image_url?: string;
-  posts: any[];
+  posts: Post[];
   posts_count: number;
   followers_count: number;
   following_count: number;
@@ -22,11 +29,12 @@ interface MyPageData {
 export function useMyPage() {
   const [data, setData] = useState<MyPageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchMyPage = useCallback(async () => {
+    const fetchMyPage = useCallback(async (page: number) => {
     setLoading(true);
     try {
-      const res = await fetch("https://127.0.0.1:8000/api/accounts/mypage/", {
+      const res = await fetch(`https://127.0.0.1:8000/api/accounts/mypage/?page=${page}`, {
         method: "GET",
         credentials: "include",
       });
@@ -44,8 +52,8 @@ export function useMyPage() {
   }, []);
 
   useEffect(() => {
-    fetchMyPage();
-  }, [fetchMyPage]);
+    fetchMyPage(currentPage);
+  }, [currentPage, fetchMyPage]);
 
-  return { data, loading, fetchMyPage };
+  return { data, loading, fetchMyPage, currentPage, setCurrentPage };
 }

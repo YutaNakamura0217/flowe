@@ -7,11 +7,12 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from .serializers import MyPageSerializer
+from posts.serializers import PostSerializer
 from posts.models import Post
 from communities.models import Community
 from .models import Follow
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, permissions, serializers, pagination
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -161,24 +162,11 @@ def mypage_view(request):
     # フォロワー数
     followers_count = Follow.objects.filter(following=user).count()
 
-    # ユーザーの投稿を全件取得（作成日時の降順でソート）
-    user_posts = Post.objects.filter(user=user).order_by('-created_at')
-    posts_count = user_posts.count()
-
-    post_list = []
-    for p in user_posts:
-        post_list.append({
-            "id": p.id,
-            "image_url": request.build_absolute_uri(p.image_url.url) if p.image_url else None,
-            "likes": p.post_likes.count(),
-            "comments": p.post_comments.count(),
-        })
-
     # joined_date は User モデルの date_joined と仮定
     joined_date = user.date_joined.strftime("%Y-%m-%d")
 
-    # お気に入り (Like した投稿) と仮定（サンプルとして6件取得）
-    favorite_posts = Post.objects.filter(post_likes__user=user).distinct()
+   # お気に入り (Like した投稿) と仮定（サンプルとして6件取得）
+    favorite_posts = Post.objects.filter(post_likes__user=user).distinct()[:6]
     favorites_list = []
     for fp in favorite_posts:
         image_url = fp.image_url.url if fp.image_url else None
@@ -190,6 +178,7 @@ def mypage_view(request):
             "likes": fp.post_likes.count(),
             "comments": fp.post_comments.count(),
         })
+
     # 所属コミュニティ (CommunityモデルにManyToManyがある前提 or 何らかの関係)
     # 今回は単純化し、コミュニティ全件をダミー取得
     user_communities = Community.objects.all()[:4]
@@ -201,6 +190,11 @@ def mypage_view(request):
             "memberCount": 123,
             "cover_image": None,
         })
+
+    # ユーザーの投稿
+    user_posts = Post.objects.filter(user=user).order_by('-created_at')
+    serializer = PostSerializer(user_posts, many=True, context={'request': request})
+    posts_count = user_posts.count()
 
     # 組み立て
     data = {
@@ -214,13 +208,12 @@ def mypage_view(request):
         "followers_count": followers_count,
         "following_count": following_count,
         "joined_date": joined_date,
-        "posts": post_list,
+        "posts": serializer.data,  # シリアライズされた投稿データ
         "favorites": favorites_list,
         "communities": communities_list,
     }
 
-    serializer = MyPageSerializer(data)
-    return Response(serializer.data)
+    return Response(data) # 直接 data を返す
 
 # accounts/views.py
 from rest_framework.decorators import api_view, permission_classes

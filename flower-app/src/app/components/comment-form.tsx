@@ -1,47 +1,53 @@
-// components/comment-form.tsx
 "use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useCsrfToken } from '@/hooks/useCsrfToken';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 interface CommentFormProps {
-  eventId: string;
-  onCommentPosted: (newComment: string) => void;
+  resourceType: "event" | "post";
+  resourceId: string;
+  onCommentPosted: (newCommentText: string) => Promise<void>;
 }
 
-export function CommentForm({ eventId, onCommentPosted }: CommentFormProps) {
-  const [comment, setComment] = useState('');
+export function CommentForm({
+  resourceType,
+  resourceId,
+  onCommentPosted,
+}: CommentFormProps) {
+  const [comment, setComment] = useState("");
   const csrfToken = useCsrfToken();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (comment.trim()) {
       try {
-        const res = await fetch(
-          `https://127.0.0.1:8000/api/events/${eventId}/comments/`,
-          {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken,
-            },
-            // キーを"text"に変更（モデルのフィールド名に合わせる）
-            body: JSON.stringify({ text: comment }),
-          }
-        );
+        // resourceTypeに応じてURLを切り替える例
+        const url =
+          resourceType === "event"
+            ? `https://127.0.0.1:8000/api/events/${resourceId}/comments/`
+            : `https://127.0.0.1:8000/api/posts/${resourceId}/comments/`;
+
+        const res = await fetch(url, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ text: comment }), // フィールド名に合わせる
+        });
         if (!res.ok) {
-          throw new Error('Failed to post comment');
+          throw new Error("Failed to post comment");
         }
-        console.log('Comment posted successfully');
-        // 投稿成功後、コールバックを呼ぶ
+
+        // 投稿成功後、コールバックを呼ぶ（コメント一覧の再取得など）
         onCommentPosted(comment);
       } catch (error) {
         console.error(error);
       }
-      setComment('');
+      setComment("");
     }
   };
 
