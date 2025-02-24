@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useFollowStatus } from "@/hooks/useFollowStatus"; // useFollowStatus フックをインポート
+import { useFollowStatus } from "@/hooks/useFollowStatus";
 import { useMyPage } from "@/hooks/useMyPage";
 
 interface ProfileHeaderProps {

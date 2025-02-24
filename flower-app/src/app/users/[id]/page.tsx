@@ -68,7 +68,6 @@ async function getUserCommunities(userId: string) {
 }
 
 // ユーザーがいいねした投稿一覧を取得する関数
-// ユーザーのお気に入り投稿を取得する関数
 async function getUserFavorites(userId: string) {
   console.log("getUserFavorites 関数が呼び出されました. userId:", userId);
   const favoritesRes = await fetch(`https://127.0.0.1:8000/api/posts/${userId}/favorites/`);
@@ -79,12 +78,11 @@ async function getUserFavorites(userId: string) {
   return favoritesData;
 }
 
-
 export default async function UserProfilePage({ params }: { params: { id: string } }) {
   const { userData, postsData } = await getUserData(params.id);
   const communitiesData = await getUserCommunities(params.id);
   const favoritesData = await getUserFavorites(params.id);
-  
+
   // ユーザーデータを整形
   const user: User = {
     id: userData.id,
@@ -100,7 +98,8 @@ export default async function UserProfilePage({ params }: { params: { id: string
     following_count: userData.following_count,
   };
   console.log("userdata", user);
-  const posts: Post[] = postsData.map((item: any) => ({
+
+  const posts: Post[] = postsData.results.map((item: any) => ({
     id: item.id,
     image_url: item.image_url,
     caption: item.caption,
@@ -128,7 +127,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
   }));
 
   // お気に入り投稿データを整形
-  const favorites: Post[] = favoritesData.map((item: any) => ({
+  const favorites: Post[] = favoritesData.results.map((item: any) => ({
     id: item.id,
     image_url: item.image_url,
     caption: item.caption,
@@ -155,7 +154,7 @@ export default async function UserProfilePage({ params }: { params: { id: string
     public_status: item.public_status,
   }));
 
-  const communities: Community[] = communitiesData.map((c: any) => ({
+  const communities: Community[] = communitiesData.results.map((c: any) => ({
     id: c.id,
     name: c.name,
     memberCount: c.memberCount || 0,
