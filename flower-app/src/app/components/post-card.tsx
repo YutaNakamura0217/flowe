@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import { useToggleLike } from "@/hooks/useToggleLike";
 
+
 interface PostCardProps {
   post: {
     id: number;

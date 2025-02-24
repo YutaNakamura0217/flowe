@@ -26,8 +26,7 @@ export interface Post {
   public_status: boolean;
 }
 
-// ページネーションされたレスポンスの型
-interface PaginatedPosts {
+export interface PaginatedPosts {
   count: number;
   next: string | null;
   previous: string | null;
