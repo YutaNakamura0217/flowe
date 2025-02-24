@@ -4,14 +4,15 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PostList } from "@/components/post-list"
 import { EventList } from "@/components/event-list"
+import { Post } from "@/hooks/usePosts";
 
 interface CommunityTabsProps {
-  posts: any[]
-  events: any[]
+  posts: Post[];
+  events: any[];
 }
 
 export function CommunityTabs({ posts, events }: CommunityTabsProps) {
-  const [activeTab, setActiveTab] = useState("posts")
+  const [activeTab, setActiveTab] = useState("posts");
 
   return (
     <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
@@ -20,7 +21,7 @@ export function CommunityTabs({ posts, events }: CommunityTabsProps) {
         <TabsTrigger value="events">イベント</TabsTrigger>
       </TabsList>
       <TabsContent value="posts">
-        <PostList posts={posts} />
+        <PostList postData={{ results: posts, count: posts.length, next: null, previous: null }} />
       </TabsContent>
       <TabsContent value="events">
         <EventList events={events} />
@@ -28,4 +29,3 @@ export function CommunityTabs({ posts, events }: CommunityTabsProps) {
     </Tabs>
   )
 }
-

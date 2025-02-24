@@ -4,7 +4,7 @@ import { CommunityTabs } from "@/components/community-tabs";
 import { useEffect, useState } from "react";
 import { NewPostModal } from "@/components/NewPostModal";
 import { NewEventModal } from "@/components/NewEventModal";
-
+import { Post } from "@/hooks/usePosts";
 
 interface CommunityApiResponse {
   id: number;
@@ -16,27 +16,26 @@ interface CommunityApiResponse {
   events: any[];
 }
 
-interface Post {
-  id: number;
-  user: any;
-  image_url: string;
-  caption: string;
-  likes: number;
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  tags: string[];
-  variety_name: string;
-  location: string;
-  public_status: string;
+interface PaginatedPosts {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Post[];
 }
 
 export default function CommunityPage({ params }: { params: { id: string } }) {
-  const [communityData, setCommunityData] = useState<CommunityApiResponse | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]); // Separate state for posts
+  const [communityData, setCommunityData] = useState<CommunityApiResponse | null>(
+    null
+  );
+  const [posts, setPosts] = useState<PaginatedPosts>({
+    count: 0,
+    next: null,
+    previous: null,
+    results: [],
+  }); // Separate state for posts
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  
+
   // モーダルの開閉フラグ
   const [showPostModal, setShowPostModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -53,6 +52,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
         }
       );
       if (!response.ok) {
+        throw new Error(`APIリクエストエラー: ${response.status}`);
         throw new Error(`APIリクエストエラー: ${response.status}`);
       }
       const data: CommunityApiResponse = await response.json();
@@ -73,8 +73,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        `https://127.0.0.1:8000/api/posts/?community=${communityId}`,
+      const response = await fetch(`https://127.0.0.1:8000/api/posts/?community=${communityId}`,
         {
           credentials: "include",
         }
@@ -82,7 +81,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       if (!response.ok) {
         throw new Error(`APIリクエストエラー: ${response.status}`);
       }
-      const data: Post[] = await response.json();
+      const data: PaginatedPosts = await response.json(); // Expect PaginatedPosts
       setPosts(data);
     } catch (e) {
       if (e instanceof Error) {
@@ -102,11 +101,11 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     fetchPosts();
   }, [communityId]);
 
-  // 新規投稿後のコールバック
-  const handlePostCreated = () => {
-    // ポスト一覧を再取得
-    fetchPosts();
-  };
+    // 新規投稿後のコールバック
+    const handlePostCreated = () => {
+        // ポスト一覧を再取得
+        fetchPosts();
+    }
 
   if (loading) {
     return <div>ロード中...</div>;
@@ -123,10 +122,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
-        <CommunityHeader
-          community={communityData}
-          onJoinLeave={fetchCommunityData}
-        />
+        <CommunityHeader community={communityData} onJoinLeave={fetchCommunityData} />
 
         <div className="container py-8">
           {/* コミュニティ未参加のとき */}
@@ -157,7 +153,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
           )}
 
           {/* 投稿一覧・イベント一覧 */}
-          <CommunityTabs posts={posts} events={communityData.events} />
+          <CommunityTabs posts={posts.results} events={communityData.events} />
         </div>
       </main>
 
