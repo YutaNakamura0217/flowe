@@ -1,4 +1,3 @@
-// comment-section.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -28,9 +27,17 @@ interface CommentAPIResponse {
   created_at: string;
 }
 
+// 追加: ページネーションされたコメントレスポンス
+interface PaginatedComments {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CommentAPIResponse[];
+}
+
 interface CommentSectionProps {
-  resourceType: "event" | "post";  // イベントか投稿かを示す
-  resourceId: string;             // ID
+  resourceType: "event" | "post"; // イベントか投稿かを示す
+  resourceId: string;            // ID
   initialComments: Comment[];
 }
 
@@ -43,7 +50,6 @@ export function CommentSection({
 
   // コメント一覧を再フェッチする関数（更新用）
   const fetchComments = async () => {
-    // イベント or 投稿かでURLを変える
     const url =
       resourceType === "event"
         ? `https://127.0.0.1:8000/api/events/${resourceId}/comments/`
@@ -51,7 +57,12 @@ export function CommentSection({
 
     const res = await fetch(url, { cache: "no-cache" });
     if (res.ok) {
-      const commentsData: CommentAPIResponse[] = await res.json();
+      // ページネーション形式を受け取る
+      const data: PaginatedComments = await res.json();
+      // data.resultsが実際のコメント配列
+      const commentsData = data.results; 
+
+      // results配列をmap
       const newComments = commentsData.map((c) => ({
         id: c.id.toString(),
         user: {
@@ -60,14 +71,15 @@ export function CommentSection({
         },
         text: c.text,
         createdAt: c.created_at,
-        likes: 0, // イベントのCommentsAPIにlikesがあればここを調整
+        likes: 0, // likesがあれば適宜調整
       }));
+
       setComments(newComments);
     }
   };
 
-  // 新規コメント送信後に再フェッチ
   const handleCommentPosted = async (newCommentText: string) => {
+    // 送信した後、再フェッチなどを行う想定
     await fetchComments();
   };
 

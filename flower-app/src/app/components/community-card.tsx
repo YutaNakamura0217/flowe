@@ -5,12 +5,12 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Community } from "@/components/types";
+import { CommunitySerializer } from "@/components/types";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { useState } from "react";
 
 interface CommunityCardProps {
-  community: Community;
+  community: CommunitySerializer;
 }
 
 export function CommunityCard({ community }: CommunityCardProps) {
@@ -43,8 +43,8 @@ export function CommunityCard({ community }: CommunityCardProps) {
             <AvatarFallback>M</AvatarFallback>
           </Avatar>
           <span className="text-sm text-muted-foreground">
-            {community.member_count
-              ? community.member_count
+            {community.members_count
+              ? community.members_count
               : community.members_count}{" "}
             メンバー
           </span>

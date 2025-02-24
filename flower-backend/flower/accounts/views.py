@@ -165,8 +165,8 @@ def mypage_view(request):
     # joined_date は User モデルの date_joined と仮定
     joined_date = user.date_joined.strftime("%Y-%m-%d")
 
-   # お気に入り (Like した投稿) と仮定（サンプルとして6件取得）
-    favorite_posts = Post.objects.filter(post_likes__user=user).distinct()[:6]
+    # お気に入り (Like した投稿) と仮定
+    favorite_posts = Post.objects.filter(post_likes__user=user).distinct()
     favorites_list = []
     for fp in favorite_posts:
         image_url = fp.image_url.url if fp.image_url else None
@@ -180,8 +180,8 @@ def mypage_view(request):
         })
 
     # 所属コミュニティ (CommunityモデルにManyToManyがある前提 or 何らかの関係)
-    # 今回は単純化し、コミュニティ全件をダミー取得
-    user_communities = Community.objects.all()[:4]
+    # 今回は単純化し、コミュニティ全件を取得
+    user_communities = Community.objects.all()
     communities_list = []
     for c in user_communities:
         communities_list.append({
