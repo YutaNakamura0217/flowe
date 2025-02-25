@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .serializers import MyPageSerializer
+from .serializers import MyPageSerializer, NotificationSerializer
 from posts.serializers import PostSerializer
 from posts.models import Post
 from communities.models import Community
@@ -291,3 +291,33 @@ class FollowStatusView(generics.RetrieveAPIView): # RetrieveAPIView を使用 (G
     ).exists()
 
     return Response({"is_following": is_following}) # フォロー状態 (真偽値) を返す
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def notifications_list(request):
+    """
+    通知一覧を取得するAPIビュー
+    """
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')[:20]
+    
+    serializer = NotificationSerializer(notifications, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def mark_notification_read(request, notification_id=None):
+    """
+    通知を既読にするAPIビュー
+    notification_id が指定されている場合は特定の通知を既読にし、
+    指定されていない場合はすべての通知を既読にする
+    """
+    if notification_id:
+        # 特定の通知を既読にする
+        notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+        notification.is_read = True
+        notification.save()
+    else:
+        # すべての通知を既読にする
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    
+    return Response({"success": True})

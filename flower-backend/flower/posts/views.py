@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from communities.models import CommunityMembership
+from accounts.models import Notification  # 通知モデルをインポート
 
 User = get_user_model()
 
@@ -88,7 +89,17 @@ class CommentListCreate(generics.ListCreateAPIView):
         post = get_object_or_404(Post, id=post_id)
         # リクエストボディで送られてくるキーは "content" としているので、それを text にマッピング
         text = self.request.data.get("text")
-        serializer.save(user=self.request.user, post=post, text=text)
+        comment = serializer.save(user=self.request.user, post=post, text=text)
+        
+        # 投稿の所有者に通知を作成（自分自身の投稿へのコメントの場合は通知しない）
+        if post.user != self.request.user:
+            Notification.objects.create(
+                recipient=post.user,
+                sender=self.request.user,
+                post=post,
+                comment=comment,
+                notification_type='comment'
+            )
 
 class PostListPerQueryView(generics.ListAPIView):
     """
@@ -144,6 +155,15 @@ class ToggleLikeAPIView(views.APIView):
         if created:
             # 新規にいいねが作成された場合
             message = "いいねしました"
+            
+            # 投稿の所有者に通知を作成（自分自身の投稿へのいいねの場合は通知しない）
+            if post.user != user:
+                Notification.objects.create(
+                    recipient=post.user,
+                    sender=user,
+                    post=post,
+                    notification_type='like'
+                )
         else:
             # 既に存在していた場合 => 削除(いいね解除)する
             like_obj.delete()

@@ -12,5 +12,8 @@ urlpatterns = [
     path('csrf/', views.get_csrf_token),
     path('users/<int:user_id>/', views.user_detail_view, name='user-detail'), 
     path('users/<int:user_id>/follow/', views.FollowToggleView.as_view(), name='follow_toggle'), 
-    path('users/<int:user_id>/follow/status/', views.FollowStatusView.as_view(), name='follow_status'), 
+    path('users/<int:user_id>/follow/status/', views.FollowStatusView.as_view(), name='follow_status'),
+    path('notifications/', views.notifications_list, name='notifications_list'),
+    path('notifications/mark-read/', views.mark_notification_read, name='mark_all_notifications_read'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
 ]

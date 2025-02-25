@@ -6,6 +6,7 @@ import { Search, Bell, Flower, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserDropdown } from "@/components/user-dropdown";
+import { NotificationDropdown } from "@/components/notification-dropdown";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
@@ -56,10 +57,7 @@ export function Header() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="text-[#F0E68C]">
-            <Bell className="h-6 w-6" />
-            <span className="sr-only">通知</span>
-          </Button>
+          {isAuthenticated && <NotificationDropdown />}
           {loading ? (
             <span>Loading...</span>
           ) : isAuthenticated ? (

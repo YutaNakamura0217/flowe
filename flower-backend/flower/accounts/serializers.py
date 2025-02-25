@@ -1,7 +1,7 @@
 # accounts/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import UserProfile, Follow
+from .models import UserProfile, Follow, Notification
 from posts.models import Post, Like
 
 User = get_user_model()
@@ -95,3 +95,31 @@ class FollowSerializer(serializers.ModelSerializer):
         if data['follower'] == data['following']:
             raise serializers.ValidationError("You cannot follow yourself.")
         return data
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """通知をシリアライズする"""
+    sender_name = serializers.SerializerMethodField()
+    content_preview = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Notification
+        fields = ['id', 'notification_type', 'sender_name', 'content_preview', 'is_read', 'created_at']
+    
+    def get_sender_name(self, obj):
+        if obj.sender:
+            return obj.sender.username
+        return None
+    
+    def get_content_preview(self, obj):
+        # 通知タイプに応じて適切なプレビューテキストを返す
+        if obj.notification_type == 'like':
+            return 'あなたの投稿にいいねしました'
+        elif obj.notification_type == 'comment':
+            return 'あなたの投稿にコメントしました'
+        elif obj.notification_type == 'follow':
+            return 'あなたをフォローしました'
+        elif obj.notification_type == 'event_reminder':
+            return 'イベントのリマインダー'
+        elif obj.notification_type == 'announcement':
+            return '運営からのお知らせ'
+        return ''
