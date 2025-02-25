@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserDropdown } from "@/components/user-dropdown";
 import { NotificationDropdown } from "@/components/notification-dropdown";
+import { UserDropdownSkeleton } from "./UserDropdownSkeleton";
+import { NotificationDropdownSkeleton } from "./NotificationDropdownSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
@@ -57,9 +59,13 @@ export function Header() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
-          {isAuthenticated && <NotificationDropdown />}
           {loading ? (
-            <span>Loading...</span>
+            <NotificationDropdownSkeleton />
+          ) : isAuthenticated ? (
+            <NotificationDropdown />
+          ) : null}
+          {loading ? (
+            <UserDropdownSkeleton />
           ) : isAuthenticated ? (
             <UserDropdown />
           ) : (
