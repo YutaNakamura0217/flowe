@@ -45,6 +45,7 @@ export default function MyPage() {
         <Breadcrumb items={breadcrumbItems} />
         <div className="my-8">
           <UserStats
+            userId={user.id}
             postsCount={user.posts_count}
             followersCount={user.followers_count}
             followingCount={user.following_count}
@@ -56,6 +57,7 @@ export default function MyPage() {
           posts={data.posts}
           favorites={data.favorites}
           communities={data.communities}
+          userId={data.id}
         />
       </div>
 

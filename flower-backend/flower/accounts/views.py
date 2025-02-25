@@ -6,11 +6,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from .serializers import MyPageSerializer, NotificationSerializer
+from .serializers import MyPageSerializer, NotificationSerializer, UserSerializer
 from posts.serializers import PostSerializer
 from posts.models import Post
 from communities.models import Community
 from .models import Follow
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import generics, permissions, serializers, pagination
 from rest_framework.response import Response
@@ -321,3 +322,55 @@ def mark_notification_read(request, notification_id=None):
         Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     
     return Response({"success": True})
+
+class UserFollowersPagination(PageNumberPagination):
+    """フォロワー・フォロー中ユーザー一覧のページネーション設定"""
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_followers(request, user_id):
+    """
+    指定したユーザーのフォロワー一覧を取得する
+    """
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=404)
+    
+    # フォロワーを取得 (このユーザーをフォローしているユーザー)
+    followers = User.objects.filter(following__following=user)
+    
+    # ページネーション
+    paginator = UserFollowersPagination()
+    paginated_followers = paginator.paginate_queryset(followers, request)
+    
+    # シリアライズ
+    serializer = UserSerializer(paginated_followers, many=True, context={'request': request})
+    
+    return paginator.get_paginated_response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def user_following(request, user_id):
+    """
+    指定したユーザーがフォローしているユーザー一覧を取得する
+    """
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=404)
+    
+    # フォロー中のユーザーを取得 (このユーザーがフォローしているユーザー)
+    following = User.objects.filter(followers__follower=user)
+    
+    # ページネーション
+    paginator = UserFollowersPagination()
+    paginated_following = paginator.paginate_queryset(following, request)
+    
+    # シリアライズ
+    serializer = UserSerializer(paginated_following, many=True, context={'request': request})
+    
+    return paginator.get_paginated_response(serializer.data)

@@ -8,6 +8,7 @@ import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { User, PaginatedPosts, PaginatedCommunities } from "@/components/types";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { UserStats } from "@/components/user-stats";
 
 // 既存のデータ取得関数はそのまま利用できますが、
 // トップレベルで呼び出すのではなく useEffect で呼び出すようにします。
@@ -224,9 +225,25 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
           </Button>
         </div>
         
-        <ProfileHeader user={user} />
+        <ProfileHeader user={{
+          ...user,
+          joinedDate: "登録日不明" // UserStatsと同じ値を渡す
+        }} />
         <div className="container py-8">
-          <ProfileTabs posts={posts} favorites={favorites} communities={communities} />
+          <UserStats
+            userId={user.id}
+            postsCount={user.posts_count}
+            followersCount={user.followers_count}
+            followingCount={user.following_count}
+            joinedDate="登録日不明" // ユーザー詳細APIからは登録日が取得できない場合
+          />
+          <div className="my-8"></div>
+        <ProfileTabs 
+          posts={posts} 
+          favorites={favorites} 
+          communities={communities} 
+          userId={parseInt(params.id)}
+        />
         </div>
       </main>
     </div>

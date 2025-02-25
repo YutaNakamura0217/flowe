@@ -9,10 +9,12 @@ interface ProfileTabsProps {
   posts: PaginatedPosts;
   favorites: PaginatedPosts;
   communities: PaginatedCommunities;
+  userId: number;
 }
 
-export function ProfileTabs({ posts, favorites, communities }: ProfileTabsProps) {
+export function ProfileTabs({ posts, favorites, communities, userId }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState("posts");
+  
   return (
     <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
       <TabsList className="grid w-full grid-cols-3">
