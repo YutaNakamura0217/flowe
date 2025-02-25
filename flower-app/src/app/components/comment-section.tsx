@@ -18,15 +18,12 @@ export function CommentSection({
   initialComments,
 }: CommentSectionProps) {
   // useComments フックを利用してコメント一覧と再取得関数を取得
-  const { comments, fetchComments } = useComments(resourceType, resourceId, initialComments);
+  const { comments, fetchComments, isLoading } = useComments(resourceType, resourceId, initialComments);
 
   // コメント投稿後に一覧を再フェッチするコールバック
   const handleCommentPosted = async (newCommentText: string) => {
     await fetchComments();
   };
-
-  // コメントデータがロード中かどうかを判断
-  const isLoading = !comments || comments.length === 0;
 
   if (isLoading) {
     return <CommentSectionSkeleton />;
@@ -35,7 +32,11 @@ export function CommentSection({
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">コメント</h2>
-      <CommentList comments={comments} />
+      {comments.length > 0 ? (
+        <CommentList comments={comments} />
+      ) : (
+        <p className="text-muted-foreground">コメントはまだありません。最初のコメントを投稿しましょう！</p>
+      )}
       <CommentForm
         resourceType={resourceType}
         resourceId={resourceId}

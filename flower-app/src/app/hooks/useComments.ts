@@ -43,8 +43,10 @@ export function useComments(
   initialComments: Comment[] = []
 ) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchComments = useCallback(async () => {
+    setIsLoading(true);
     const url =
       resourceType === "event"
         ? `https://127.0.0.1:8000/api/events/${resourceId}/comments/`
@@ -70,6 +72,8 @@ export function useComments(
       }
     } catch (error) {
       console.error("コメント取得中にエラーが発生しました:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [resourceType, resourceId]);
 
@@ -77,5 +81,5 @@ export function useComments(
     fetchComments();
   }, [fetchComments]);
 
-  return { comments, fetchComments };
+  return { comments, fetchComments, isLoading };
 }
