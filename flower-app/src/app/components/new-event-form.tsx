@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { useCsrfToken } from '../hooks/useCsrfToken';
+"use client";
+
+import React, { useState } from "react";
+import { useCreateEvent } from "@/hooks/useCreateEvent";
 
 interface Event {
   id: number;
@@ -28,14 +30,15 @@ interface NewEventFormProps {
 }
 
 const NewEventForm: React.FC<NewEventFormProps> = ({ communityId, onEventCreated }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
-  const [location, setLocation] = useState('');
-  const [capacity, setCapacity] = useState('');
-  const [fee, setFee] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [fee, setFee] = useState("");
   const [isCommunityOnly, setIsCommunityOnly] = useState(false);
-  const csrfToken = useCsrfToken();
+
+  const { createEvent, loading, error } = useCreateEvent(communityId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,56 +54,22 @@ const NewEventForm: React.FC<NewEventFormProps> = ({ communityId, onEventCreated
       community: communityId ?? null,
     };
 
-    const endpoint = communityId
-      ? `https://127.0.0.1:8000/api/events/communities/${communityId}/events/`
-      : `https://127.0.0.1:8000/api/events/`;
-
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        credentials: 'include',
-        body: JSON.stringify(eventData),
-      });
-
-      if (response.ok) {
-        // Handle success (e.g., redirect, show message)
-        console.log('Event created successfully!');
-        // Handle success: Call the onEventCreated callback
-        if (onEventCreated) {
-          const data = await response.json();
-          const newEvent: Event = {
-            id: data.id,
-            organizer: data.organizer,
-            community: data.community,
-            title: data.title,
-            description: data.description,
-            date: data.date,
-            location: data.location,
-            capacity: data.capacity,
-            fee: data.fee,
-            created_at: data.created_at,
-            attendees_count: 0, // Initialize attendees_count
-            is_community_only: data.is_community_only,
-          };
-          onEventCreated(newEvent);
-        }
-        setTitle('');
-        setDescription('');
-        setDate('');
-        setLocation('');
-        setCapacity('');
-        setFee('');
-        setIsCommunityOnly(false);
-      } else {
-        // Handle error
-        console.error('Failed to create event:', response.statusText);
+      const newEvent = await createEvent(eventData);
+      console.log("Event created successfully!", newEvent);
+      if (onEventCreated) {
+        onEventCreated(newEvent);
       }
-    } catch (error) {
-      console.error('Error creating event:', error);
+      // フォームリセット
+      setTitle("");
+      setDescription("");
+      setDate("");
+      setLocation("");
+      setCapacity("");
+      setFee("");
+      setIsCommunityOnly(false);
+    } catch (err) {
+      console.error("Error creating event:", err);
     }
   };
 
@@ -198,9 +167,11 @@ const NewEventForm: React.FC<NewEventFormProps> = ({ communityId, onEventCreated
       <button
         type="submit"
         className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        disabled={loading}
       >
-        Create Event
+        {loading ? "Creating..." : "Create Event"}
       </button>
+      {error && <p className="text-red-500">{error}</p>}
     </form>
   );
 };

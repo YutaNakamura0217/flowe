@@ -50,7 +50,7 @@ const NewPostForm: React.FC<NewPostFormProps> = ({ communityId, onPostCreated })
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRFToken': csrfToken, // Include CSRF token in headers
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
       });

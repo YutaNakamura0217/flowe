@@ -6,8 +6,6 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommunitySerializer } from "@/components/types";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
-import { useState } from "react";
 
 interface CommunityCardProps {
   community: CommunitySerializer;

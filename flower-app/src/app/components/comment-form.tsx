@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { usePostComment } from "@/hooks/usePostComment";
 
 interface CommentFormProps {
   resourceType: "event" | "post";
@@ -11,41 +11,19 @@ interface CommentFormProps {
   onCommentPosted: (newCommentText: string) => Promise<void>;
 }
 
-export function CommentForm({
-  resourceType,
-  resourceId,
-  onCommentPosted,
-}: CommentFormProps) {
+export function CommentForm({ resourceType, resourceId, onCommentPosted }: CommentFormProps) {
   const [comment, setComment] = useState("");
-  const csrfToken = useCsrfToken();
+  const { postComment, loading, error } = usePostComment({ resourceType, resourceId });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (comment.trim()) {
       try {
-        // resourceTypeに応じてURLを切り替える例
-        const url =
-          resourceType === "event"
-            ? `https://127.0.0.1:8000/api/events/${resourceId}/comments/`
-            : `https://127.0.0.1:8000/api/posts/${resourceId}/comments/`;
-
-        const res = await fetch(url, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-          body: JSON.stringify({ text: comment }), // フィールド名に合わせる
-        });
-        if (!res.ok) {
-          throw new Error("Failed to post comment");
-        }
-
-        // 投稿成功後、コールバックを呼ぶ（コメント一覧の再取得など）
-        onCommentPosted(comment);
-      } catch (error) {
-        console.error(error);
+        await postComment(comment);
+        // 投稿成功後のコールバック（コメント一覧の再取得等）
+        await onCommentPosted(comment);
+      } catch (err) {
+        console.error("コメント投稿に失敗しました:", err);
       }
       setComment("");
     }
@@ -59,9 +37,10 @@ export function CommentForm({
         onChange={(e) => setComment(e.target.value)}
         className="min-h-[100px]"
       />
-      <Button type="submit" disabled={!comment.trim()}>
-        コメントを投稿
+      <Button type="submit" disabled={loading || !comment.trim()}>
+        {loading ? "投稿中…" : "コメントを投稿"}
       </Button>
+      {error && <p className="text-red-500">エラー: {error.message}</p>}
     </form>
   );
 }

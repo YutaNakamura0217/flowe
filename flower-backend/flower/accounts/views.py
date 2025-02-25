@@ -69,7 +69,6 @@ def signup(request):
         return HttpResponseNotAllowed(['POST'])
 
 
-@csrf_exempt
 def login_view(request):
     if request.method == "POST":
         try:

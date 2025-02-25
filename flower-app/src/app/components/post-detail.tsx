@@ -1,26 +1,23 @@
 // src/components/post-detail.tsx
 "use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import { Flower, MessageCircle, Share2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { useState } from "react"
-
-// いいねトグルのフック
-import { useToggleLike } from "@/hooks/useToggleLike"
+import Image from "next/image";
+import Link from "next/link";
+import { Flower, MessageCircle, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { usePostLike } from "@/hooks/usePostLike";
 
 interface PostDetailProps {
   post: {
-    id: string
-    imageUrl: string
-    caption: string
-    likes: number
-    comments: number
-    flowerType: string
-    location: string
+    id: string;
+    imageUrl: string;
+    caption: string;
+    likes: number;
+    comments: number;
+    flowerType: string;
+    location: string;
     user: {
       id: number;
       name: string;
@@ -29,18 +26,16 @@ interface PostDetailProps {
     tags?: string[];
   };
   currentUserId?: number;
-  csrfToken: string; // Add csrfToken prop
+  csrfToken: string;
 }
 
 export function PostDetail({ post, currentUserId, csrfToken }: PostDetailProps) {
-  const [likesCount, setLikesCount] = useState<number>(post.likes)
-  const { toggleLike, isLoading, error } = useToggleLike()
-  const handleLikeClick = async () => {
-    const result = await toggleLike(Number(post.id), csrfToken) // Pass csrfToken
-    if (result) {
-      setLikesCount(result.likes_count)
-    }
-  }
+  // usePostLike フックを利用して、いいね数の状態管理と操作処理を切り出す
+  const { likesCount, handleLike, isLoading, error } = usePostLike(
+    Number(post.id),
+    post.likes,
+    csrfToken
+  );
 
   return (
     <div className="space-y-6">
@@ -70,9 +65,11 @@ export function PostDetail({ post, currentUserId, csrfToken }: PostDetailProps) 
             <p className="text-sm text-muted-foreground">投稿者</p>
           </div>
         </div>
-        {currentUserId !== undefined && post.user.id !== undefined && currentUserId !== Number(post.user.id) && (
-          <Button variant="outline">フォロー</Button>
-        )}
+        {currentUserId !== undefined &&
+          post.user.id !== undefined &&
+          currentUserId !== Number(post.user.id) && (
+            <Button variant="outline">フォロー</Button>
+          )}
       </div>
       
       {/* 投稿内容 & タグ */}
@@ -95,7 +92,7 @@ export function PostDetail({ post, currentUserId, csrfToken }: PostDetailProps) 
           variant="ghost"
           size="icon"
           aria-label="いいね"
-          onClick={handleLikeClick}
+          onClick={handleLike}
           disabled={isLoading}
         >
           <Flower className="h-5 w-5 text-pink-400" />
@@ -108,13 +105,13 @@ export function PostDetail({ post, currentUserId, csrfToken }: PostDetailProps) 
         </Button>
       </div>
       
-      {/* いいね数 表示 (ローカルステートのlikesCount) */}
+      {/* いいね数 表示 */}
       <div>
         <span className="font-medium">{likesCount}件</span>のいいね
       </div>
-
+      
       {/* エラー表示 */}
       {error && <p className="text-red-600">いいね操作失敗: {error.message}</p>}
     </div>
-  )
+  );
 }

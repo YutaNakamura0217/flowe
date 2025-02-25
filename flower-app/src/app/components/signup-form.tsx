@@ -1,59 +1,37 @@
-"use client"
+// src/app/components/signup-form.tsx
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Flower } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { useState } from "react";
+import Link from "next/link";
+import { Flower } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { useSignup } from "@/hooks/useSignup";
 
 export function SignupForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const { signup, loading, error } = useSignup();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    // パスワードと確認用パスワードが一致しているかチェック
     if (password !== confirmPassword) {
-      alert("パスワードが一致しません")
-      return
+      alert("パスワードが一致しません");
+      return;
     }
 
-    // Django の UserCreationForm は通常、username / password1 / password2 を期待します。
-    // メールアドレスを username として使うため、username フィールドに email の値を渡します。
     const payload = {
       username: email,
       email: email,
       password1: password,
       password2: confirmPassword,
-    }
+    };
 
-    try {
-      const res = await fetch("https://127.0.0.1:8000/api/accounts/signup/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json()
-
-      if (res.ok && data.success) {
-        // サインアップ成功時はログイン画面へ遷移など、お好みの処理
-        router.push("/login")
-      } else {
-        // バックエンド側でのエラーを表示
-        alert("サインアップに失敗しました: " + JSON.stringify(data.errors || data.error))
-      }
-    } catch (error) {
-      console.error("サインアップ中のエラー:", error)
-      alert("サインアップ中にエラーが発生しました")
-    }
-  }
+    await signup(payload);
+  };
 
   return (
     <Card className="w-full">
@@ -102,9 +80,10 @@ export function SignupForm() {
               required
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={loading}>
             アカウント作成
           </Button>
+          {error && <p className="text-red-600">{error}</p>}
         </form>
       </CardContent>
       <CardFooter className="flex justify-center">
@@ -116,5 +95,5 @@ export function SignupForm() {
         </p>
       </CardFooter>
     </Card>
-  )
+  );
 }

@@ -13,7 +13,6 @@ export function NotificationSettingsForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // ここに実際の更新ロジックを実装します
     console.log("Updating notification settings:", {
       emailNotifications,
       pushNotifications,

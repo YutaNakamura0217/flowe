@@ -1,8 +1,8 @@
+"use client";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useJoinLeaveCommunity } from "@/hooks/useJoinLeaveCommunity";
 
 interface CommunityHeaderProps {
   community: {
@@ -13,44 +13,22 @@ interface CommunityHeaderProps {
     members_count: number;
     is_member: boolean;
   };
-  onJoinLeave: () => void; // Add callback prop
+  onJoinLeave: () => void;
 }
 
 export function CommunityHeader({ community, onJoinLeave }: CommunityHeaderProps) {
-  const [isJoining, setIsJoining] = useState(false);
-  const [isMember, setIsMember] = useState(community.is_member); // Local state for isMember
-  const [membersCount, setMembersCount] = useState(community.members_count);
-  const csrfToken = useCsrfToken();
+  const { isJoining, isMember, membersCount, handleJoinLeave } = useJoinLeaveCommunity({
+    communityId: community.id,
+    initialIsMember: community.is_member,
+    initialMembersCount: community.members_count,
+  });
 
-  const handleJoinLeave = async () => {
-    setIsJoining(true);
+  const handleButtonClick = async () => {
     try {
-      const response = await fetch(
-        `https://127.0.0.1:8000/api/communities/${community.id}/join/`,
-        {
-          method: isMember ? "DELETE" : "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-
-      // Update local state
-      setIsMember(!isMember);
-      setMembersCount(prevCount => isMember ? prevCount - 1 : prevCount + 1);
-
-      // Call the callback function
-      onJoinLeave();
+      await handleJoinLeave();
+      onJoinLeave(); // コールバックを実行
     } catch (error) {
-      console.error("Error joining/leaving community:", error);
-    } finally {
-      setIsJoining(false);
+      // エラーはフック内でログ出力済み
     }
   };
 
@@ -72,14 +50,13 @@ export function CommunityHeader({ community, onJoinLeave }: CommunityHeaderProps
             <h1 className="text-2xl font-bold">{community.name}</h1>
             <p className="text-muted-foreground">{community.description}</p>
             <p className="text-sm text-muted-foreground">
-              {/* Use local state for membersCount */}
               {membersCount} メンバー
             </p>
           </div>
           <Button
             variant="default"
             className="mt-4 sm:mt-0"
-            onClick={handleJoinLeave}
+            onClick={handleButtonClick}
             disabled={isJoining}
           >
             {isJoining ? (

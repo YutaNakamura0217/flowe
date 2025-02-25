@@ -5,7 +5,7 @@ import { EventList } from "@/components/event-list"
 import { PaginatedPosts } from "@/hooks/usePosts"
 
 interface CommunityTabsProps {
-  posts: PaginatedPosts;  // ページネーション付き
+  posts: PaginatedPosts;
   events: any[];
 }
 
@@ -18,7 +18,6 @@ export function CommunityTabs({ posts, events }: CommunityTabsProps) {
       </TabsList>
 
       <TabsContent value="posts">
-        {/* PostList にページネーションオブジェクトをそのまま渡す */}
         <PostList postData={posts} />
       </TabsContent>
 

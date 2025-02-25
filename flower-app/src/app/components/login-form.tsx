@@ -1,46 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Flower } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import type React from "react"
+import { useState } from "react";
+import Link from "next/link";
+import { Flower } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { useLogin } from "@/hooks/useLogin";
 
 export function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { login, loading, error } = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const payload = {
-      email,
-      password,
-    }
-
-    try {
-      const res = await fetch("https://127.0.0.1:8000/api/accounts/login/", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })      
-      const data = await res.json()
-      if (res.ok && data.success) {
-        // ログイン成功後、マイページへ遷移
-        router.push("/mypage")
-      } else {
-        alert("ログインに失敗しました: " + (data.error || "不明なエラー"))
-      }
-    } catch (error) {
-      console.error("ログイン中のエラー:", error)
-      alert("ログイン中にエラーが発生しました")
-    }
-  }
+    e.preventDefault();
+    await login({ email, password });
+  };
 
   return (
     <Card className="w-full">
@@ -76,9 +52,10 @@ export function LoginForm() {
               required
             />
           </div>
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={loading}>
             ログイン
           </Button>
+          {error && <p className="text-red-500">{error}</p>}
         </form>
       </CardContent>
       <CardFooter className="flex justify-center">
@@ -90,7 +67,6 @@ export function LoginForm() {
         </p>
       </CardFooter>
     </Card>
-  )
+  );
 }
-
 

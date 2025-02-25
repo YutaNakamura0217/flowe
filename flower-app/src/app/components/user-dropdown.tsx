@@ -1,8 +1,8 @@
+// src/components/user-dropdown.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { User, Settings, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLogout } from "@/hooks/useLogout";
 
 export function UserDropdown() {
   const { user, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
+  const { logout, isLoading, error } = useLogout();
 
   if (loading) {
     return <span>Loading...</span>;
@@ -27,23 +28,6 @@ export function UserDropdown() {
   if (!user) {
     return null;
   }
-
-  // Django 認証用のカスタムログアウトハンドラー
-  const handleLogout = async () => {
-    try {
-      const res = await fetch("https://127.0.0.1:8000/api/accounts/logout/", {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        router.push("/login");
-      } else {
-        console.error("Logout failed");
-      }
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
-  };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -71,12 +55,19 @@ export function UserDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="flex items-center text-red-600 cursor-pointer"
-          onClick={handleLogout}
+          onClick={logout}
+          disabled={isLoading}
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>ログアウト</span>
         </DropdownMenuItem>
+        {error && (
+          <DropdownMenuItem className="text-red-600">
+            ログアウト失敗: {error.message}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+

@@ -5,10 +5,10 @@ import { Dialog } from "@headlessui/react";
 import NewPostForm from "./NewPostForm";
 
 interface NewPostModalProps {
-  isOpen: boolean;                  // モーダル表示フラグ
-  onClose: () => void;             // モーダルを閉じるコールバック
-  onPostCreated: () => void;       // 投稿完了時のコールバック
-  communityId: string;             // コミュニティID
+  isOpen: boolean;
+  onClose: () => void;
+  onPostCreated: () => void;
+  communityId: string;
 }
 
 export function NewPostModal({

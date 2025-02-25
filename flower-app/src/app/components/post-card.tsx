@@ -6,9 +6,7 @@ import { Flower, MessageCircle, Share2 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
-import { useToggleLike } from "@/hooks/useToggleLike";
-
+import { usePostLike } from "@/hooks/usePostLike";
 
 interface PostCardProps {
   post: {
@@ -27,24 +25,16 @@ interface PostCardProps {
     created_at: string;
     updated_at: string;
   };
-  csrfToken: string; // Add csrfToken prop
+  csrfToken: string;
 }
 
 export function PostCard({ post, csrfToken }: PostCardProps) {
-   // ローカルステートにlikesをコピー
-  const [likesCount, setLikesCount] = useState(post.likes);
-
-  // いいねトグルフック
-  const { toggleLike, isLoading, error } = useToggleLike();
-
-  // ボタンが押された時の処理
-  const handleLikeClick = async () => {
-    const result = await toggleLike(post.id, csrfToken); // Pass csrfToken
-    if (result) {
-      // APIから返ってきた最新のいいね数を反映
-      setLikesCount(result.likes_count);
-    }
-  };
+  // usePostLike フックを利用して、いいねの操作と状態管理を分離
+  const { likesCount, handleLike, isLoading, error } = usePostLike(
+    post.id,
+    post.likes,
+    csrfToken
+  );
 
   return (
     <Card className="overflow-hidden bg-[#FFF0F5]">
@@ -89,7 +79,7 @@ export function PostCard({ post, csrfToken }: PostCardProps) {
             variant="ghost"
             size="icon"
             aria-label="いいね"
-            onClick={handleLikeClick}
+            onClick={handleLike}
             disabled={isLoading}
           >
             <Flower className="h-5 w-5 text-pink-400" />
@@ -101,7 +91,7 @@ export function PostCard({ post, csrfToken }: PostCardProps) {
             <Share2 className="h-5 w-5" />
           </Button>
         </div>
-        {/* いいね数 (ローカルステート) */}
+        {/* いいね数 (usePostLike から取得) */}
         <div className="text-sm">
           <span className="font-medium">{likesCount}件</span> のいいね
         </div>
