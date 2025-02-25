@@ -11,7 +11,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // URLからページ番号を抽出するヘルパー関数
 const getPageNumberFromUrl = (url: string | null): number => {
@@ -36,11 +36,20 @@ export default function HomePage() {
   // イベントのカスタムフック (pass csrfToken correctly!)
   const { events, fetchEvents } = useEvents(csrfToken);
 
+  // Add a state to track if we've already checked authentication
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    // Only redirect if we've checked authentication and the user is not authenticated
+    if (!loading && !isAuthenticated && authChecked) {
       router.push("/login");
     }
-  }, [loading, isAuthenticated, router]);
+    
+    // Mark that we've checked authentication
+    if (!loading) {
+      setAuthChecked(true);
+    }
+  }, [loading, isAuthenticated, router, authChecked]);
 
   if (loading || !isAuthenticated) {
     return (

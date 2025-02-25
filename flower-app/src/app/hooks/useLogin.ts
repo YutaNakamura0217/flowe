@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LoginPayload {
   email: string;
@@ -14,13 +15,14 @@ export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const csrfToken = useCsrfToken();
+  const { refreshAuth } = useAuth();
 
   const login = useCallback(
-    async ({ email, password }: LoginPayload) => {
+    async ({ email, password }: LoginPayload): Promise<string | void> => {
       // CSRFトークンが取得できていない場合はエラーを返す（必要に応じてリトライ処理なども検討）
       if (!csrfToken) {
         setError("CSRFトークンが取得できません。ページをリロードしてください。");
-        return;
+        return "csrf_error";
       }
 
       setLoading(true);
@@ -40,7 +42,13 @@ export function useLogin() {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          router.push("/mypage");
+          // Refresh authentication state before redirecting
+          await refreshAuth();
+          router.push("/");
+        } else if (res.status === 403) {
+          // 403エラーはCSRFトークンの問題と判断
+          setError("CSRFトークンが無効です。再試行します...");
+          return "csrf_error";
         } else {
           setError(data.error || "不明なエラー");
         }
@@ -51,7 +59,7 @@ export function useLogin() {
         setLoading(false);
       }
     },
-    [router, csrfToken]
+    [router, csrfToken, refreshAuth]
   );
 
   return { login, loading, error };

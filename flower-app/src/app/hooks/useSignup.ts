@@ -4,6 +4,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SignupPayload {
   username: string;
@@ -17,6 +18,7 @@ export function useSignup() {
   const csrfToken = useCsrfToken();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { refreshAuth } = useAuth();
 
   const signup = useCallback(
     async (payload: SignupPayload) => {
@@ -33,7 +35,7 @@ export function useSignup() {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": csrfToken,
+            "X-CSRFToken": csrfToken
           },
           body: JSON.stringify(payload),
         });
@@ -41,6 +43,20 @@ export function useSignup() {
 
         if (res.ok && data.success) {
           // サインアップ成功時はログインページへ遷移
+          // 新しいCSRFトークンを取得してからリダイレクト
+          try {
+            // Add a timestamp query parameter for cache busting instead of headers
+            const timestamp = new Date().getTime();
+            await fetch(`https://127.0.0.1:8000/api/accounts/csrf/?_=${timestamp}`, {
+              credentials: "include"
+            });
+            console.log("CSRF token refreshed after signup");
+            // Refresh auth state to ensure it's up to date
+            await refreshAuth();
+          } catch (error) {
+            console.error("Failed to refresh CSRF token after signup:", error);
+          }
+          
           router.push("/login");
         } else {
           setError(JSON.stringify(data.errors || data.error));
@@ -52,7 +68,7 @@ export function useSignup() {
         setLoading(false);
       }
     },
-    [router, csrfToken]
+    [router, csrfToken, refreshAuth]
   );
 
   return { signup, loading, error };

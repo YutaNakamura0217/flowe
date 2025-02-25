@@ -151,10 +151,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_CREDENTIALS = True 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "http://localhost:3000",
+    "https://localhost:3000",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "http://localhost:3000",
+    "https://localhost:3000",
 ]
 
 
@@ -172,6 +178,6 @@ AUTH_USER_MODEL = 'auth.User'
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = True
 
-CSRF_COOKIE_SECURE = False 
+CSRF_COOKIE_SECURE = True 
 CSRF_COOKIE_SAMESITE = 'None'
 ######################################################################################

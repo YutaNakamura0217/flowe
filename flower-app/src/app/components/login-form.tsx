@@ -7,15 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useLogin } from "@/hooks/useLogin";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, loading, error } = useLogin();
+  const { refreshAuth } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login({ email, password });
+    
+    // Try to login
+    const result = await login({ email, password });
+    
+    // If there was a CSRF token error, try to refresh the page
+    if (result === "csrf_error") {
+      // Force a CSRF token refresh
+      try {
+        // Add a timestamp query parameter for cache busting instead of headers
+        const timestamp = new Date().getTime();
+        const res = await fetch(`https://127.0.0.1:8000/api/accounts/csrf/?_=${timestamp}`, {
+          credentials: "include"
+        });
+        if (res.ok) {
+          // Try login again after a short delay
+          setTimeout(async () => {
+            const loginResult = await login({ email, password });
+            if (loginResult !== "csrf_error") {
+              // Force refresh auth state
+              await refreshAuth();
+            }
+          }, 500);
+        }
+      } catch (error) {
+        console.error("CSRF refresh error:", error);
+      }
+    }
   };
 
   return (
@@ -69,4 +97,3 @@ export function LoginForm() {
     </Card>
   );
 }
-
