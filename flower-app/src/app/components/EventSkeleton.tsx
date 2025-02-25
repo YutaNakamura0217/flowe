@@ -65,3 +65,34 @@ export function EventPageSkeleton() {
     </main>
   );
 }
+
+export function EventGridSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Array(count)
+        .fill(0)
+        .map((_, index) => (
+          <div key={index} className="bg-white rounded-lg shadow-md p-4">
+            <Skeleton height={24} width="80%" className="mb-4" />
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <Skeleton circle width={16} height={16} className="mr-2" />
+                <Skeleton width="60%" />
+              </div>
+              <div className="flex items-center">
+                <Skeleton circle width={16} height={16} className="mr-2" />
+                <Skeleton width="70%" />
+              </div>
+              <div className="flex items-center">
+                <Skeleton circle width={16} height={16} className="mr-2" />
+                <Skeleton width="40%" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Skeleton height={36} />
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}

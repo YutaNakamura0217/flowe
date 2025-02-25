@@ -1,7 +1,7 @@
 "use client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PostList } from "@/components/post-list"
-import { EventList } from "@/components/event-list"
+import { PostGrid } from "@/components/post-grid"
+import { EventGrid } from "@/components/event-grid"
 import { PaginatedPosts } from "@/hooks/usePosts"
 
 interface CommunityTabsProps {
@@ -19,11 +19,11 @@ export function CommunityTabs({ posts, events, isLoading = false }: CommunityTab
       </TabsList>
 
       <TabsContent value="posts">
-        <PostList postData={posts} />
+        <PostGrid posts={posts.results} />
       </TabsContent>
 
       <TabsContent value="events">
-        <EventList events={events} isLoading={isLoading} />
+        <EventGrid events={events} isLoading={isLoading} />
       </TabsContent>
     </Tabs>
   )

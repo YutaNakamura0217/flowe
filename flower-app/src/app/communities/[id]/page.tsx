@@ -63,6 +63,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       }
       const data: CommunityApiResponse = await response.json();
       setCommunityData(data);
+      console.log("communityData.events:", data.events); // Add console.log here
     } catch (e) {
       if (e instanceof Error) {
         setError(e);

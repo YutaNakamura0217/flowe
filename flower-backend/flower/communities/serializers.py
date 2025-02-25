@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from communities.models import Community, CommunityMembership
-from serializers.nested import NestedEventSerializer, NestedUserSerializer
+from serializers.nested import NestedUserSerializer
+from events.serializers import EventSerializer # EventSerializer をインポート
 from posts.serializers import PostSerializer
 
 class CommunityMembershipSerializer(serializers.ModelSerializer):
@@ -16,7 +17,7 @@ class CommunitySerializer(serializers.ModelSerializer):
     is_member = serializers.SerializerMethodField()
     members = CommunityMembershipSerializer(source='communitymembership_set', many=True, read_only=True)
     posts = PostSerializer(many=True, read_only=True)
-    events = NestedEventSerializer(many=True, read_only=True)  # 簡易版イベントシリアライザを利用
+    events = EventSerializer(many=True, read_only=True)  # EventSerializer を使用
 
     class Meta:
         model = Community

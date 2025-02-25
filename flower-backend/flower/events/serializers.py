@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Event, EventAttendance, Comment  # Import the Comment model
 from accounts.serializers import UserSerializer
-from communities.serializers import CommunitySerializer
+from serializers.nested import NestedCommunitySerializer
 from communities.models import Community
 from serializers.nested import NestedUserSerializer
 
@@ -16,7 +16,7 @@ class EventAttendanceSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     organizer = UserSerializer(read_only=True)
-    community = CommunitySerializer(read_only=True)
+    community = NestedCommunitySerializer(read_only=True) # NestedCommunitySerializer を使用
     attendees = UserSerializer(many=True, read_only=True)
     attendance = EventAttendanceSerializer(
         source='eventattendance_set', many=True, read_only=True
