@@ -13,7 +13,18 @@ class EventList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Event.objects.filter(is_community_only=False)
+        queryset = Event.objects.filter(is_community_only=False)
+        
+        # 検索クエリパラメータがある場合、タイトルまたは説明でフィルタリング
+        query = self.request.query_params.get('q', None)
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) | 
+                Q(description__icontains=query) |
+                Q(location__icontains=query)
+            )
+        
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(organizer=self.request.user)

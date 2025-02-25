@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { EventSearchBar } from "@/components/event-search-bar";
 import { EventList } from "@/components/event-list";
@@ -25,6 +26,9 @@ interface PaginatedEvents {
 }
 
 export default function EventsPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams?.get('q') || '';
+  
   // ページネーション含むレスポンス全体をステート管理
   const [eventsData, setEventsData] = useState<PaginatedEvents>({
     count: 0,
@@ -55,8 +59,14 @@ export default function EventsPage() {
       setLoading(true);
       setError(null);
       try {
-        // DRFページネーションで ?page=xxx を指定
-        const res = await fetch(`https://127.0.0.1:8000/api/events/?page=${page}`, {
+        // 検索クエリがある場合はURLに追加
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', page.toString());
+        if (searchQuery) {
+          queryParams.append('q', searchQuery);
+        }
+        
+        const res = await fetch(`https://127.0.0.1:8000/api/events/?${queryParams.toString()}`, {
           credentials: "include",
         });
         if (!res.ok) {
@@ -73,7 +83,7 @@ export default function EventsPage() {
     }
 
     fetchEvents(currentPage);
-  }, [currentPage]);
+  }, [currentPage, searchQuery]); // 検索クエリが変更されたときも再取得
 
   const breadcrumbItems = [
     { label: "ホーム", href: "/" },
@@ -104,18 +114,32 @@ export default function EventsPage() {
     fetchNewEvent()
   };
 
-    // ページ移動ハンドラー
+  // URLを生成するヘルパー関数
+  const getPageUrl = (page: number) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    
+    if (searchQuery) {
+      params.append('q', searchQuery);
+    }
+    
+    return `/events?${params.toString()}`;
+  };
+
+  // ページ移動ハンドラー
   const goToNextPage = () => {
     // nextがnullでなければ currentPage + 1 へ
     if (eventsData.next) {
-      setCurrentPage((prev) => prev + 1);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
     }
   };
 
   const goToPreviousPage = () => {
     // previousがnullでなければ currentPage - 1 へ
     if (eventsData.previous && currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
     }
   };
 
@@ -129,10 +153,18 @@ export default function EventsPage() {
       <div className="mb-8">
         <EventSearchBar />
       </div>
+      
+      {searchQuery && (
+        <div className="mb-4 p-2 bg-blue-50 rounded-md">
+          <p className="text-blue-700">
+            「{searchQuery}」の検索結果: {eventsData.count} 件
+          </p>
+        </div>
+      )}
 
       <button
         onClick={openModal}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mb-4"
       >
         イベント作成
       </button>
@@ -144,7 +176,17 @@ export default function EventsPage() {
       />
 
       {/* イベント表示 */}
-      <EventList events={eventsData.results} />
+      {eventsData.results.length === 0 ? (
+        <div className="text-center py-8">
+          {searchQuery ? (
+            <p className="text-gray-500">「{searchQuery}」に一致するイベントが見つかりませんでした。</p>
+          ) : (
+            <p className="text-gray-500">イベントが見つかりませんでした。</p>
+          )}
+        </div>
+      ) : (
+        <EventList events={eventsData.results} />
+      )}
 
       {/* ページネーションコントロール */}
       <div className="flex items-center justify-center mt-8 space-x-4">
