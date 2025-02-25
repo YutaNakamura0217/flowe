@@ -113,6 +113,12 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
         fetchPosts();
     }
 
+    // 新規イベント作成後のコールバック
+    const handleEventCreated = () => {
+        // コミュニティデータを再取得してイベント一覧を更新
+        fetchCommunityData();
+    }
+
   if (loading) {
     return <CommunityDetailSkeleton />;
   }
@@ -198,6 +204,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
         isOpen={showEventModal}
         onClose={() => setShowEventModal(false)}
         communityId={parseInt(communityId)}
+        onEventCreated={handleEventCreated}
       />
     </div>
   );
