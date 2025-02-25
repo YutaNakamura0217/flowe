@@ -1,7 +1,7 @@
 // app/posts/[id]/page.tsx
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,9 @@ import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 import { PostDetail } from "@/components/post-detail";
 import { CommentSection } from "@/components/comment-section";
+
+import { PostDetailSkeleton } from "@/components/PostDetailSkeleton";
+import { CommentSectionSkeleton } from "@/components/CommentSectionSkeleton";
 
 // APIレスポンス型 (必要に応じて修正してください)
 interface PostAPIResponse {
@@ -109,7 +112,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
         setCurrentUserId(userData.id);
       }
 
-      // 投稿データ
+      // 投稿データ取得
       const postRes = await fetch(
         `https://127.0.0.1:8000/api/posts/${postId}/`,
         {
@@ -138,7 +141,7 @@ export default function PostPage({ params }: { params: { id: string } }) {
         tags: postData.tags,
       });
 
-      // コメントデータ
+      // コメントデータ取得
       const commentsRes = await fetch(
         `https://127.0.0.1:8000/api/posts/${postId}/comments/`,
         { cache: "no-cache", credentials: "include" }
@@ -164,8 +167,8 @@ export default function PostPage({ params }: { params: { id: string } }) {
     }
   }
 
-  // ローディング or 未ログイン時
-  if (authLoading || !isAuthenticated || loading) {
+  // 認証状態が確定していない場合はそのままローディング表示
+  if (authLoading || !isAuthenticated) {
     return <div>Loading...</div>;
   }
 
@@ -173,18 +176,27 @@ export default function PostPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          {post && (
-            <PostDetail
-              post={post}
-              currentUserId={currentUserId ?? undefined}
-              csrfToken={csrfToken}
-            />
+          {loading ? (
+            <>
+              <PostDetailSkeleton />
+              <CommentSectionSkeleton />
+            </>
+          ) : (
+            <>
+              {post && (
+                <PostDetail
+                  post={post}
+                  currentUserId={currentUserId ?? undefined}
+                  csrfToken={csrfToken}
+                />
+              )}
+              <CommentSection
+                resourceType="post"
+                resourceId={postId}
+                initialComments={comments}
+              />
+            </>
           )}
-          <CommentSection
-            resourceType="post"
-            resourceId={postId}
-            initialComments={comments}
-          />
         </div>
       </main>
     </div>
