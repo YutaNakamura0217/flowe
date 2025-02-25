@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface Notification {
@@ -78,11 +78,32 @@ export function useNotifications() {
     }
   };
 
+  // ポーリング間隔（ミリ秒）
+  const POLLING_INTERVAL = 10000; // 10秒ごとに通知を確認
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // useCallbackでfetchNotificationsをメモ化して、依存関係の変更時のみ再作成
+  const memoizedFetchNotifications = useCallback(fetchNotifications, [isAuthenticated]);
+
   useEffect(() => {
+    // 初回のみ通知を取得
     if (isAuthenticated) {
-      fetchNotifications();
+      memoizedFetchNotifications();
+      
+      // ポーリングを設定
+      intervalRef.current = setInterval(() => {
+        memoizedFetchNotifications();
+      }, POLLING_INTERVAL);
     }
-  }, [isAuthenticated]);
+
+    // クリーンアップ関数
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isAuthenticated, memoizedFetchNotifications]);
 
   return {
     notifications,

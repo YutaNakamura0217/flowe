@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { Bell } from "lucide-react";
@@ -16,15 +16,31 @@ import { useNotifications } from "@/hooks/useNotifications";
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
   const { notifications, unreadCount, loading, markAsRead } = useNotifications();
+  const prevUnreadCountRef = useRef(unreadCount);
 
   const handleOpen = (open: boolean) => {
     setIsOpen(open);
     if (open && unreadCount > 0) {
       // ドロップダウンを開いたときに全ての通知を既読にする
       markAsRead();
+      setHasNewNotifications(false);
     }
   };
+
+  // 新しい通知が来たときの視覚的なフィードバック
+  useEffect(() => {
+    // 未読数が増えた場合、新しい通知があると判断
+    if (unreadCount > prevUnreadCountRef.current) {
+      setHasNewNotifications(true);
+      
+      // ベルアイコンをアニメーションさせるなどの視覚的フィードバックも可能
+    }
+    
+    // 現在の未読数を保存
+    prevUnreadCountRef.current = unreadCount;
+  }, [unreadCount]);
 
   const getNotificationIcon = (type: string) => {
     // 通知タイプに応じたアイコンを返す
@@ -47,8 +63,12 @@ export function NotificationDropdown() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative text-[#F0E68C]">
-          <Bell className="h-6 w-6" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={`relative text-[#F0E68C] ${hasNewNotifications ? 'animate-pulse' : ''}`}
+        >
+          <Bell className={`h-6 w-6 ${hasNewNotifications ? 'animate-bounce' : ''}`} />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
