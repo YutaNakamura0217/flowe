@@ -12,9 +12,28 @@ import {
 interface PaginationControlsProps {
   totalPages: number;
   currentPage: number;
+  searchQuery?: string;
+  basePath?: string;
 }
 
-export function PaginationControls({ totalPages, currentPage }: PaginationControlsProps) {
+export function PaginationControls({ 
+  totalPages, 
+  currentPage, 
+  searchQuery = '', 
+  basePath = '/communities'
+}: PaginationControlsProps) {
+  // ページURLを生成するヘルパー関数
+  const getPageUrl = (page: number) => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    
+    if (searchQuery) {
+      params.append('q', searchQuery);
+    }
+    
+    return `${basePath}?${params.toString()}`;
+  };
+
   const generatePageNumbers = () => {
     const pages = [];
     const maxPagesToShow = 5; // Adjust as needed
@@ -54,8 +73,8 @@ export function PaginationControls({ totalPages, currentPage }: PaginationContro
           {currentPage === 1 ? (
             <PaginationPrevious href="#" />
           ) : (
-            <Link href={`/communities?page=${currentPage - 1}`}>
-              <PaginationPrevious href={`/communities?page=${currentPage - 1}`} />
+            <Link href={getPageUrl(currentPage - 1)}>
+              <PaginationPrevious href={getPageUrl(currentPage - 1)} />
             </Link>
           )}
         </PaginationItem>
@@ -66,7 +85,7 @@ export function PaginationControls({ totalPages, currentPage }: PaginationContro
             </PaginationItem>
           ) : (
             <PaginationItem key={pageNumber}>
-              <PaginationLink href={`/communities?page=${pageNumber}`} isActive={pageNumber === currentPage}>
+              <PaginationLink href={getPageUrl(pageNumber)} isActive={pageNumber === currentPage}>
                 {pageNumber}
               </PaginationLink>
             </PaginationItem>
@@ -76,8 +95,8 @@ export function PaginationControls({ totalPages, currentPage }: PaginationContro
           {currentPage === totalPages ? (
             <PaginationNext href="#" />
           ) : (
-            <Link href={`/communities?page=${currentPage + 1}`}>
-              <PaginationNext href={`/communities?page=${currentPage + 1}`} />
+            <Link href={getPageUrl(currentPage + 1)}>
+              <PaginationNext href={getPageUrl(currentPage + 1)} />
             </Link>
           )}
         </PaginationItem>

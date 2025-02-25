@@ -20,6 +20,7 @@ export default function CommunityListPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const page = searchParams?.get('page') ? parseInt(searchParams.get('page') as string, 10) : 1;
+  const searchQuery = searchParams?.get('q') || '';
   
   const [communities, setCommunities] = useState<CommunitySerializer[]>([]);
   const [count, setCount] = useState(0);
@@ -35,7 +36,14 @@ export default function CommunityListPage() {
     async function fetchCommunities() {
       setLoading(true);
       try {
-        const res = await fetch(`https://127.0.0.1:8000/api/communities/?page=${page}`, {
+        // 検索クエリがある場合はURLに追加
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', page.toString());
+        if (searchQuery) {
+          queryParams.append('q', searchQuery);
+        }
+        
+        const res = await fetch(`https://127.0.0.1:8000/api/communities/?${queryParams.toString()}`, {
           credentials: "include",
         });
         
@@ -55,7 +63,7 @@ export default function CommunityListPage() {
     }
 
     fetchCommunities();
-  }, [page]);
+  }, [page, searchQuery]); // 検索クエリが変更されたときも再取得
 
   const totalPages = Math.ceil(count / 10); // Assuming 10 items per page
 
@@ -67,10 +75,26 @@ export default function CommunityListPage() {
         <CommunitySearchBar />
       </div>
       
+      {searchQuery && (
+        <div className="mb-4 p-2 bg-blue-50 rounded-md">
+          <p className="text-blue-700">
+            「{searchQuery}」の検索結果: {count} 件
+          </p>
+        </div>
+      )}
+      
       {loading ? (
         <CommunityGridSkeleton count={6} />
       ) : error ? (
         <div className="text-red-500">{error}</div>
+      ) : communities.length === 0 ? (
+        <div className="text-center py-8">
+          {searchQuery ? (
+            <p className="text-gray-500">「{searchQuery}」に一致するコミュニティが見つかりませんでした。</p>
+          ) : (
+            <p className="text-gray-500">コミュニティが見つかりませんでした。</p>
+          )}
+        </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {communities.map((community) => (
@@ -80,7 +104,11 @@ export default function CommunityListPage() {
       )}
       
       <div className="mt-8">
-        <PaginationControls totalPages={totalPages} currentPage={page} />
+        <PaginationControls 
+          totalPages={totalPages} 
+          currentPage={page} 
+          searchQuery={searchQuery}
+        />
       </div>
     </main>
   );
