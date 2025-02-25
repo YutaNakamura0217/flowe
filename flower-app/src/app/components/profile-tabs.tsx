@@ -21,18 +21,36 @@ export function ProfileTabs({ posts, favorites, communities }: ProfileTabsProps)
         <TabsTrigger value="communities">参加コミュニティ</TabsTrigger>
       </TabsList>
       <TabsContent value="posts">
-        <PostGrid posts={posts.results} />
+        {posts.results.length === 0 ? (
+          <div className="bg-white p-4 rounded-md shadow-md text-center">
+            <p className="text-gray-600">投稿がありません。</p>
+          </div>
+        ) : (
+          <PostGrid posts={posts.results} />
+        )}
         {/* ページネーションUIをここに追加する場合は posts.next/previous を利用 */}
       </TabsContent>
       <TabsContent value="favorites">
-        <PostGrid posts={favorites.results} />
+        {favorites.results.length === 0 ? (
+          <div className="bg-white p-4 rounded-md shadow-md text-center">
+            <p className="text-gray-600">お気に入りした投稿がありません。</p>
+          </div>
+        ) : (
+          <PostGrid posts={favorites.results} />
+        )}
       </TabsContent>
       <TabsContent value="communities">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {communities.results.map((community) => (
-            <CommunityCard key={community.id} community={community} />
-          ))}
-        </div>
+        {communities.results.length === 0 ? (
+          <div className="bg-white p-4 rounded-md shadow-md text-center">
+            <p className="text-gray-600">参加しているコミュニティがありません。</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {communities.results.map((community) => (
+              <CommunityCard key={community.id} community={community} />
+            ))}
+          </div>
+        )}
       </TabsContent>
     </Tabs>
   );

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { CalendarDays, MapPin, Users, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { EventListSkeleton } from "./EventSkeleton"
 
 interface EventListProps {
   events: {
@@ -11,9 +12,23 @@ interface EventListProps {
     location: string
     attendees_count: number 
   }[]
+  isLoading?: boolean
 }
 
-export function EventList({ events }: EventListProps) {
+export function EventList({ events, isLoading = false }: EventListProps) {
+  if (isLoading) {
+    return <EventListSkeleton count={3} />;
+  }
+
+  // イベントがない場合のメッセージを表示
+  if (events.length === 0) {
+    return (
+      <div className="bg-white p-4 rounded-md shadow-md text-center">
+        <p className="text-gray-600">イベントがありません。最初のイベントを作成しましょう！</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {events.map((event) => (

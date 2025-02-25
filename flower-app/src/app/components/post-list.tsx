@@ -54,11 +54,13 @@ export function PostList({ postData: initialPostData }: PostListProps) {
     }
   };
 
-  // データがロード中かどうかを判断
-  const isLoading = postData.results.length === 0;
-
-  if (isLoading) {
-    return <PostListSkeleton count={3} />;
+  // 投稿がない場合のメッセージを表示
+  if (postData.results.length === 0) {
+    return (
+      <div className="bg-white p-4 rounded-md shadow-md text-center">
+        <p className="text-gray-600">投稿がありません。最初の投稿を作成しましょう！</p>
+      </div>
+    );
   }
 
   return (

@@ -154,7 +154,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
           )}
 
           {/* 投稿一覧・イベント一覧 */}
-          <CommunityTabs posts={posts} events={communityData.events} />
+          <CommunityTabs posts={posts} events={communityData.events} isLoading={loading} />
         </div>
       </main>
 
