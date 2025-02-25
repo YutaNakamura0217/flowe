@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { ProfileHeader } from "@/components/profile-header";
 import { ProfileTabs } from "@/components/profile-tabs";
+import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { User, PaginatedPosts, PaginatedCommunities } from "@/components/types";
 
 // 既存のデータ取得関数はそのまま利用できますが、
@@ -179,7 +180,7 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
 
   // ローディング中
   if (loading) {
-    return <div>Loading...</div>;
+    return <ProfileSkeleton />;
   }
 
   // エラー時

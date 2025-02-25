@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { EventSearchBar } from "@/components/event-search-bar";
 import { EventList } from "@/components/event-list";
+import { EventPageSkeleton } from "@/components/EventSkeleton";
 import { NewEventModal } from "@/components/NewEventModal";
 
 interface Event {
@@ -118,7 +119,7 @@ export default function EventsPage() {
     }
   };
 
-  if (loading) return <div>loading...</div>;
+  if (loading) return <EventPageSkeleton />;
   if (error) return <div>{error}</div>;
 
   return (

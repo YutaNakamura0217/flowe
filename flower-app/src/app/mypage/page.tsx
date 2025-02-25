@@ -3,6 +3,7 @@ import { ProfileHeader } from "@/components/profile-header";
 import { UserStats } from "@/components/user-stats";
 import { ProfileTabs } from "@/components/profile-tabs";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { useMyPage } from "@/hooks/useMyPage";
 import { FloatingActionButton } from "@/components/floating-action-button";
 
@@ -11,7 +12,7 @@ export default function MyPage() {
   const { data, loading, fetchMyPage, currentPage, setCurrentPage } = useMyPage();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <ProfileSkeleton />;
   }
   if (!data) {
     return <div>データがありません</div>;

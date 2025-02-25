@@ -1,6 +1,7 @@
 "use client";
 import { CommunityHeader } from "@/components/community-header";
 import { CommunityTabs } from "@/components/community-tabs";
+import { CommunityDetailSkeleton } from "@/components/CommunityDetailSkeleton";
 import { useEffect, useState } from "react";
 import { NewPostModal } from "@/components/NewPostModal";
 import { NewEventModal } from "@/components/NewEventModal";
@@ -108,7 +109,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
     }
 
   if (loading) {
-    return <div>ロード中...</div>;
+    return <CommunityDetailSkeleton />;
   }
 
   if (error) {

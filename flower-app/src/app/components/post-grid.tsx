@@ -1,6 +1,7 @@
 // components/post-grid.tsx
 import Image from "next/image";
 import Link from "next/link";
+import { PostGridSkeleton } from "./PostGridSkeleton";
 
 interface PostGridProps {
   posts: {
@@ -12,6 +13,13 @@ interface PostGridProps {
 }
 
 export function PostGrid({ posts }: PostGridProps) {
+  // データがロード中かどうかを判断
+  const isLoading = !posts || posts.length === 0;
+
+  if (isLoading) {
+    return <PostGridSkeleton count={9} />;
+  }
+
   return (
     <div className="grid grid-cols-3 gap-1 sm:gap-2">
       {posts.map((post) => (

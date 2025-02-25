@@ -1,10 +1,13 @@
-// app/communities/page.tsx
+"use client";
+
+import { useState, useEffect } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { CommunitySearchBar } from "@/components/community-search-bar";
 import { CommunityCard } from "@/components/community-card";
-import { cookies } from 'next/headers';
+import { CommunityGridSkeleton } from "@/components/CommunityCardSkeleton";
 import { CommunitySerializer } from "@/components/types";
 import { PaginationControls } from "@/components/PaginationControls";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface PaginatedResponse<T> {
   count: number;
@@ -13,37 +16,47 @@ interface PaginatedResponse<T> {
   results: T[];
 }
 
-async function getCommunities(page: number = 1) {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('sessionid')?.value;
+export default function CommunityListPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const page = searchParams?.get('page') ? parseInt(searchParams.get('page') as string, 10) : 1;
+  
+  const [communities, setCommunities] = useState<CommunitySerializer[]>([]);
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const headers = new Headers();
-  if (sessionCookie) {
-    headers.append('Cookie', `sessionid=${sessionCookie}`);
-  }
-
-  const res = await fetch(`https://127.0.0.1:8000/api/communities/?page=${page}`, {
-    cache: "no-store",
-    headers: headers,
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch communities: ${res.status}`);
-  }
-  return res.json() as Promise<PaginatedResponse<CommunitySerializer>>;
-}
-
-export default async function CommunityListPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
   const breadcrumbItems = [
     { label: "ホーム", href: "/" },
     { label: "コミュニティ", href: "/communities" },
   ];
 
-  const page = typeof searchParams?.page === 'string' ? parseInt(searchParams.page, 10) : 1;
-  const { results: communities, count } = await getCommunities(page);
+  useEffect(() => {
+    async function fetchCommunities() {
+      setLoading(true);
+      try {
+        const res = await fetch(`https://127.0.0.1:8000/api/communities/?page=${page}`, {
+          credentials: "include",
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch communities: ${res.status}`);
+        }
+        
+        const data = await res.json() as PaginatedResponse<CommunitySerializer>;
+        setCommunities(data.results);
+        setCount(data.count);
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "コミュニティの取得中にエラーが発生しました");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchCommunities();
+  }, [page]);
+
   const totalPages = Math.ceil(count / 10); // Assuming 10 items per page
 
   return (
@@ -53,11 +66,19 @@ export default async function CommunityListPage({
       <div className="mb-8">
         <CommunitySearchBar />
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {communities.map((community) => (
-          <CommunityCard key={community.id} community={community} />
-        ))}
-      </div>
+      
+      {loading ? (
+        <CommunityGridSkeleton count={6} />
+      ) : error ? (
+        <div className="text-red-500">{error}</div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {communities.map((community) => (
+            <CommunityCard key={community.id} community={community} />
+          ))}
+        </div>
+      )}
+      
       <div className="mt-8">
         <PaginationControls totalPages={totalPages} currentPage={page} />
       </div>

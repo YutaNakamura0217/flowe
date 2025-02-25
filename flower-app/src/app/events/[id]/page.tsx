@@ -7,6 +7,7 @@ import { EventDetails } from "@/components/event-details";
 import { GoogleMap } from "@/components/google-map";
 import { ParticipantList } from "@/components/participant-list";
 import { CommentSection } from "@/components/comment-section";
+import { EventDetailPageSkeleton } from "@/components/EventDetailSkeleton";
 
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { useEventDetail } from "@/hooks/useEventDetail";
@@ -64,7 +65,7 @@ export default function EventDetailPage() {
   };
 
   // ロード中やエラーのハンドリング
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <EventDetailPageSkeleton />;
   if (error) return <div>Error: {(error as Error).message}</div>;
   if (!event) return <div>Event not found</div>;
 

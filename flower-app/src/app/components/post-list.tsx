@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { PostCard } from "./post-card";
+import { PostListSkeleton } from "./PostListSkeleton";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { Post } from "@/hooks/usePosts";
 
@@ -52,6 +53,13 @@ export function PostList({ postData: initialPostData }: PostListProps) {
       fetchNewPage(postData.previous);
     }
   };
+
+  // データがロード中かどうかを判断
+  const isLoading = postData.results.length === 0;
+
+  if (isLoading) {
+    return <PostListSkeleton count={3} />;
+  }
 
   return (
     <div className="space-y-4">

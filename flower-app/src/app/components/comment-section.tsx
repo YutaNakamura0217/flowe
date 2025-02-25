@@ -3,6 +3,7 @@
 
 import { CommentList } from "./comment-list";
 import { CommentForm } from "./comment-form";
+import { CommentSectionSkeleton } from "./CommentSectionSkeleton";
 import { useComments, Comment } from "@/hooks/useComments";
 
 interface CommentSectionProps {
@@ -23,6 +24,13 @@ export function CommentSection({
   const handleCommentPosted = async (newCommentText: string) => {
     await fetchComments();
   };
+
+  // コメントデータがロード中かどうかを判断
+  const isLoading = !comments || comments.length === 0;
+
+  if (isLoading) {
+    return <CommentSectionSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

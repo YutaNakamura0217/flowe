@@ -167,9 +167,18 @@ export default function PostPage({ params }: { params: { id: string } }) {
     }
   }
 
-  // 認証状態が確定していない場合はそのままローディング表示
+  // 認証状態が確定していない場合はスケルトンローディング表示
   if (authLoading || !isAuthenticated) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 container py-8">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <PostDetailSkeleton />
+            <CommentSectionSkeleton />
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (

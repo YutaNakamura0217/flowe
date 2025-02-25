@@ -3,6 +3,7 @@
 import { PostCard } from "@/components/post-card";
 import { Sidebar } from "@/components/sidebar";
 import { FloatingActionButton } from "@/components/floating-action-button";
+import { PostCardSkeleton } from "@/components/PostCardSkeleton";
 
 import { usePosts } from "@/hooks/usePosts";
 import { useCommunities } from "@/hooks/useCommunities";
@@ -42,7 +43,41 @@ export default function HomePage() {
   }, [loading, isAuthenticated, router]);
 
   if (loading || !isAuthenticated) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <section className="relative w-full h-64 mb-8 overflow-hidden bg-gray-200">
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="w-1/2">
+              <PostCardSkeleton />
+            </div>
+          </div>
+        </section>
+
+        <div className="grid lg:grid-cols-3 gap-10">
+          {/* メインカラム */}
+          <div className="lg:col-span-2">
+            <div className="grid sm:grid-cols-2 gap-6">
+              {Array(4)
+                .fill(0)
+                .map((_, index) => (
+                  <PostCardSkeleton key={index} />
+                ))}
+            </div>
+          </div>
+
+          {/* サイドバー */}
+          <div className="hidden lg:block">
+            <div className="sticky top-20 space-y-8">
+              {/* サイドバースケルトン */}
+              <div className="space-y-4">
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -66,9 +101,19 @@ export default function HomePage() {
         {/* メインカラム */}
         <div className="lg:col-span-2">
           <div className="grid sm:grid-cols-2 gap-6">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} csrfToken={csrfToken} />
-            ))}
+            {posts.length === 0 ? (
+              // 投稿データがロード中の場合はスケルトン表示
+              Array(4)
+                .fill(0)
+                .map((_, index) => (
+                  <PostCardSkeleton key={index} />
+                ))
+            ) : (
+              // 投稿データがある場合は通常表示
+              posts.map((post) => (
+                <PostCard key={post.id} post={post} csrfToken={csrfToken} />
+              ))
+            )}
           </div>
         
           {/* ページネーション */}
