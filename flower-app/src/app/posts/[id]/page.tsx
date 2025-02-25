@@ -3,12 +3,15 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 
 import { PostDetail } from "@/components/post-detail";
 import { CommentSection } from "@/components/comment-section";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 import { PostDetailSkeleton } from "@/components/PostDetailSkeleton";
 import { CommentSectionSkeleton } from "@/components/CommentSectionSkeleton";
@@ -185,6 +188,26 @@ export default function PostPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container py-8">
         <div className="max-w-3xl mx-auto space-y-8">
+          {/* パンくずリスト */}
+          <Breadcrumb
+            items={[
+              { label: "ホーム", href: "/" },
+              { label: "投稿一覧", href: "/" },
+              { label: "投稿詳細", href: `/posts/${postId}` },
+            ]}
+          />
+          
+          {/* 戻るボタン */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4 flex items-center gap-1"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            戻る
+          </Button>
+          
           {loading ? (
             <>
               <PostDetailSkeleton />

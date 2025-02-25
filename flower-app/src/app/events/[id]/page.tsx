@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { EventDetails } from "@/components/event-details";
 import { GoogleMap } from "@/components/google-map";
 import { ParticipantList } from "@/components/participant-list";
 import { CommentSection } from "@/components/comment-section";
 import { EventDetailPageSkeleton } from "@/components/EventDetailSkeleton";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 import { useCsrfToken } from "@/hooks/useCsrfToken";
 import { useEventDetail } from "@/hooks/useEventDetail";
@@ -25,6 +28,7 @@ interface Comment {
 
 export default function EventDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const eventId = parseInt(id as string, 10);
 
   const { event, isLoading, error, refetch } = useEventDetail(eventId);
@@ -112,6 +116,26 @@ export default function EventDetailPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container py-8">
+        {/* パンくずリスト */}
+        <Breadcrumb
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "イベント", href: "/events" },
+            { label: event.title, href: `/events/${eventId}` },
+          ]}
+        />
+        
+        {/* 戻るボタン */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mb-4 flex items-center gap-1"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          戻る
+        </Button>
+        
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
             {/* イベント詳細 */}

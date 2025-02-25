@@ -3,9 +3,13 @@ import { CommunityHeader } from "@/components/community-header";
 import { CommunityTabs } from "@/components/community-tabs";
 import { CommunityDetailSkeleton } from "@/components/CommunityDetailSkeleton";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { NewPostModal } from "@/components/NewPostModal";
 import { NewEventModal } from "@/components/NewEventModal";
 import { Post } from "@/hooks/usePosts";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 interface CommunityApiResponse {
   id: number;
@@ -25,6 +29,7 @@ interface PaginatedPosts {
 }
 
 export default function CommunityPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [communityData, setCommunityData] = useState<CommunityApiResponse | null>(
     null
   );
@@ -123,6 +128,28 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
+        <div className="container py-4">
+          {/* パンくずリスト */}
+          <Breadcrumb
+            items={[
+              { label: "ホーム", href: "/" },
+              { label: "コミュニティ", href: "/communities" },
+              { label: communityData.name, href: `/communities/${communityId}` },
+            ]}
+          />
+          
+          {/* 戻るボタン */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4 flex items-center gap-1"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            戻る
+          </Button>
+        </div>
+        
         <CommunityHeader community={communityData} onJoinLeave={fetchCommunityData} />
 
         <div className="container py-8">

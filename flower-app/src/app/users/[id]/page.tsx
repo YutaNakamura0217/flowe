@@ -1,9 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { ProfileHeader } from "@/components/profile-header";
 import { ProfileTabs } from "@/components/profile-tabs";
 import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { User, PaginatedPosts, PaginatedCommunities } from "@/components/types";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { Button } from "@/components/ui/button";
 
 // 既存のデータ取得関数はそのまま利用できますが、
 // トップレベルで呼び出すのではなく useEffect で呼び出すようにします。
@@ -47,6 +51,7 @@ async function getUserFavorites(userId: string) {
 }
 
 export default function UserProfilePage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   // ステートを用意
   const [user, setUser] = useState<User | null>(null);
   const [posts, setPosts] = useState<PaginatedPosts | null>(null);
@@ -197,6 +202,28 @@ export default function UserProfilePage({ params }: { params: { id: string } }) 
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-1">
+        <div className="container py-4">
+          {/* パンくずリスト */}
+          <Breadcrumb
+            items={[
+              { label: "ホーム", href: "/" },
+              { label: "ユーザー", href: "/" },
+              { label: user.username, href: `/users/${params.id}` },
+            ]}
+          />
+          
+          {/* 戻るボタン */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mb-4 flex items-center gap-1"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            戻る
+          </Button>
+        </div>
+        
         <ProfileHeader user={user} />
         <div className="container py-8">
           <ProfileTabs posts={posts} favorites={favorites} communities={communities} />
