@@ -100,14 +100,35 @@ class NotificationSerializer(serializers.ModelSerializer):
     """通知をシリアライズする"""
     sender_name = serializers.SerializerMethodField()
     content_preview = serializers.SerializerMethodField()
+    sender_id = serializers.SerializerMethodField()
+    post = serializers.SerializerMethodField()
+    event = serializers.SerializerMethodField()
     
     class Meta:
         model = Notification
-        fields = ['id', 'notification_type', 'sender_name', 'content_preview', 'is_read', 'created_at']
+        fields = [
+            'id', 'notification_type', 'sender_name', 'sender_id', 
+            'content_preview', 'is_read', 'created_at', 'post', 'event'
+        ]
     
     def get_sender_name(self, obj):
         if obj.sender:
             return obj.sender.username
+        return None
+        
+    def get_sender_id(self, obj):
+        if obj.sender:
+            return obj.sender.id
+        return None
+        
+    def get_post(self, obj):
+        if obj.post:
+            return obj.post.id
+        return None
+        
+    def get_event(self, obj):
+        if obj.event:
+            return obj.event.id
         return None
     
     def get_content_preview(self, obj):

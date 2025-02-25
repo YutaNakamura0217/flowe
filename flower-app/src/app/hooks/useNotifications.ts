@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCsrfToken } from './useCsrfToken';
 
 export interface Notification {
   id: number;
   notification_type: string;
   sender_name: string | null;
+  sender_id: number | null;
   content_preview: string;
   is_read: boolean;
   created_at: string;
+  post: number | null;
+  event: number | null;
 }
 
 export function useNotifications() {
@@ -17,6 +21,7 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { isAuthenticated } = useAuth();
+  const csrfToken = useCsrfToken();
 
   const fetchNotifications = async () => {
     if (!isAuthenticated) {
@@ -45,14 +50,28 @@ export function useNotifications() {
   };
 
   const markAsRead = async (notificationId?: number) => {
+    // CSRFトークンが取得できていない場合は処理をスキップ
+    if (!csrfToken) {
+      console.warn('CSRF token not available, skipping mark as read');
+      return;
+    }
+
     try {
       const url = notificationId 
         ? `https://127.0.0.1:8000/api/accounts/notifications/${notificationId}/mark-read/`
         : 'https://127.0.0.1:8000/api/accounts/notifications/mark-read/';
       
+      console.log('Marking notifications as read with CSRF token:', csrfToken);
+      
       const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        },
+        // 空のボディを送信
+        body: JSON.stringify({}),
       });
       
       if (!response.ok) {
@@ -73,6 +92,9 @@ export function useNotifications() {
           prev.map(notification => ({ ...notification, is_read: true }))
         );
       }
+      
+      // 通知を再取得して最新の状態を反映
+      fetchNotifications();
     } catch (err) {
       setError(err instanceof Error ? err : new Error('通知の既読処理中にエラーが発生しました'));
     }

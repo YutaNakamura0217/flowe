@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,8 @@ export function NotificationDropdown() {
   const { notifications, unreadCount, loading, markAsRead } = useNotifications();
   const prevUnreadCountRef = useRef(unreadCount);
 
+  const router = useRouter();
+  
   const handleOpen = (open: boolean) => {
     setIsOpen(open);
     if (open && unreadCount > 0) {
@@ -27,6 +30,36 @@ export function NotificationDropdown() {
       markAsRead();
       setHasNewNotifications(false);
     }
+  };
+
+  // 通知をクリックしたときの処理
+  const handleNotificationClick = (notification: any) => {
+    // 通知を既読にする
+    markAsRead(notification.id);
+    
+    // 通知タイプに応じて適切なページに遷移
+    switch (notification.notification_type) {
+      case "like":
+      case "comment":
+        if (notification.post) {
+          router.push(`/posts/${notification.post}`);
+        }
+        break;
+      case "follow":
+        if (notification.sender_id) {
+          router.push(`/users/${notification.sender_id}`);
+        }
+        break;
+      case "event_reminder":
+        if (notification.event) {
+          router.push(`/events/${notification.event}`);
+        }
+        break;
+      // その他の通知タイプに対する処理を追加
+    }
+    
+    // ドロップダウンを閉じる
+    setIsOpen(false);
   };
 
   // 新しい通知が来たときの視覚的なフィードバック
@@ -81,7 +114,17 @@ export function NotificationDropdown() {
         <div className="flex items-center justify-between p-4">
           <h2 className="text-lg font-semibold">通知</h2>
           {notifications.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => markAsRead()}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                markAsRead();
+                // 視覚的なフィードバックを追加
+                if (unreadCount > 0) {
+                  setHasNewNotifications(false);
+                }
+              }}
+            >
               すべて既読にする
             </Button>
           )}
@@ -94,7 +137,11 @@ export function NotificationDropdown() {
         ) : (
           <div className="max-h-[300px] overflow-y-auto">
             {notifications.map((notification) => (
-              <DropdownMenuItem key={notification.id} className="cursor-default p-4">
+              <DropdownMenuItem 
+                key={notification.id} 
+                className="cursor-pointer p-4 hover:bg-gray-100"
+                onClick={() => handleNotificationClick(notification)}
+              >
                 <div className="flex items-start gap-3">
                   <div className="text-xl">{getNotificationIcon(notification.notification_type)}</div>
                   <div className="flex-1">
