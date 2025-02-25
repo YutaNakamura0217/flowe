@@ -10,7 +10,7 @@ export function useCsrfToken() {
     async function fetchCsrf() {
       try {
         const res = await fetch("https://127.0.0.1:8000/api/accounts/csrf/", {
-          credentials: "include", // セッションCookieを送信
+          credentials: "include",
         });
         if (!res.ok) {
           throw new Error("Failed to fetch CSRF token");

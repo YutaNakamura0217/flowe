@@ -51,7 +51,7 @@ export function useToggleLike() {
         setIsLoading(false);
       }
     },
-    [] // Removed csrfToken from dependency array
+    []
   );
 
   return {
