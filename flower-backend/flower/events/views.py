@@ -13,9 +13,22 @@ class EventList(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # 非コミュニティ限定イベントを取得
         queryset = Event.objects.filter(is_community_only=False)
         
-        # 検索クエリパラメータがある場合、タイトルまたは説明でフィルタリング
+        # ログインユーザーが認証されている場合
+        if self.request.user.is_authenticated:
+            # ユーザーが所属しているコミュニティを取得
+            user_communities = self.request.user.communities.all()
+            # ユーザーが所属しているコミュニティのコミュニティ限定イベントを取得
+            community_events = Event.objects.filter(
+                is_community_only=True,
+                community__in=user_communities
+            )
+            # 非コミュニティ限定イベントとコミュニティ限定イベントを結合
+            queryset = queryset.union(community_events)
+
+        # 検索クエリパラメータがある場合、タイトル、説明、場所でフィルタリング
         query = self.request.query_params.get('q', None)
         if query:
             queryset = queryset.filter(
